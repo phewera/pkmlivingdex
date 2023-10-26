@@ -1,0 +1,9 @@
+.venv
+.idea/misc.xml
+.idea/workspace.xml
+.idea/Buildout_Eggs.xml
+*.pyc
+var/*.db
+var/*.pid
+var/*.pid-lock
+var/import/*
