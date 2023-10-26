@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Any, List, Union, Optional, TypeVar, Type
+from database import logger
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
@@ -8,6 +9,9 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from database.config import TAvailableEnvironments, Environments
 from database.models import Base, Pokedex, Generation, DexEntry, Pokemon
+from database.models import TPokedexData, TGenerationData, TDexEntryData, TPokemonData
+from database.exceptions import DatabaseError
+from sqlalchemy.exc import IntegrityError
 
 WORKING_DIR = os.path.dirname(os.path.abspath(__file__))
 ModelInstance = TypeVar("ModelInstance", bound=Base)
@@ -40,8 +44,8 @@ class DatabaseManager:
         # init db
         Base.metadata.create_all(self.engine)
 
-    def create_pokedex(self, data) -> Pokedex:
-        pass
+    def create_pokedex(self, data: TPokedexData) -> Optional[Pokedex]:
+        return self._create(Pokedex, data)
 
     def create_generation(self) -> Generation:
         pass
@@ -53,11 +57,14 @@ class DatabaseManager:
         pass
 
     def _create(self, model: Type[Base], data: Dict[str, Any]) -> Optional[ModelInstance]:
-        obj = model(**data)
-        self.session.add(obj)
-        self.session.commit()
+        try:
+            obj = model(**data)
+            self.session.add(obj)
+            self.session.commit()
 
-        if not obj:
+        except IntegrityError as err:
+            self.session.rollback()
+            logger.error(f'Creating "{model.__name__}" failed ({err.orig})')
             return None
 
         return obj
@@ -69,3 +76,10 @@ class DatabaseManager:
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):
         pass
+
+        # columns = model.__table__.columns.keys()
+        # for key, value in data.items():
+        #     if not value:
+        #         raise
+        #     if key not in columns:
+        #         raise

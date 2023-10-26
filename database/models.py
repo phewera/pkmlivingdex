@@ -5,32 +5,24 @@ from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
 from sqlalchemy.orm.relationships import Relationship
 
 
-# noinspection PyTypedDict
 class TPokedexData(TypedDict):
-    id: int
     title: str
 
 
-# noinspection PyTypedDict
 class TGenerationData(TPokedexData):
-    id: int
     number: int
     name: str
     sprite: str
     pokedex_id: int
 
 
-# noinspection PyTypedDict
 class TDexEntryData(TPokedexData):
-    id: int
     number: int
     name: str
     generation_id: str
 
 
-# noinspection PyTypedDict
 class TPokemonData(TPokedexData):
-    id: int
     form: int
     sprite: str
     caught: bool
@@ -65,7 +57,7 @@ class Pokedex(Base):
     __tablename__ = 'pokedex'
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     # metadata
-    title = mapped_column(String)
+    title = mapped_column(String, unique=True)
     # children
     generations = relationship("Generation", back_populates="pokedex")
 

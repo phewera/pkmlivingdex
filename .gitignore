@@ -6,4 +6,5 @@
 var/*.db
 var/*.pid
 var/*.pid-lock
+var/log/*.log
 var/import/*

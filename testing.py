@@ -1,3 +1,4 @@
+import logging
 import os
 from unittest import TestLoader, TextTestRunner
 
@@ -5,13 +6,15 @@ from unittest import TestLoader, TextTestRunner
 def run_tests():
     loader = TestLoader()
     runner = TextTestRunner()
-
     suite = loader.discover(
         start_dir=os.getcwd(),
         pattern='test_*.py'
     )
 
+    # disable logging while running tests
+    logging.disable(logging.CRITICAL)
     result = runner.run(suite)
+    logging.disable(logging.NOTSET)
 
     # set exit code for CI
     if result.wasSuccessful():
