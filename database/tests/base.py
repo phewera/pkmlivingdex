@@ -1,7 +1,8 @@
+import os
 from unittest import TestCase
+
 from database.manager import DatabaseManager
 from database.models import Base
-import os
 
 
 class DatabaseTestCase(TestCase):
