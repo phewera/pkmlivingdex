@@ -11,7 +11,13 @@ def run_tests():
         pattern='test_*.py'
     )
 
-    runner.run(suite)
+    result = runner.run(suite)
+
+    # set exit code for CI
+    if result.wasSuccessful():
+        exit(0)
+    else:
+        exit(1)
 
 
 if __name__ == '__main__':
