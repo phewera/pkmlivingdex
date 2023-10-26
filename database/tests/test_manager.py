@@ -13,7 +13,8 @@ class TestDatabaseManager(DatabaseTestCase):
         self.skipTest('ToDo')
 
     def test_create_pokemon(self):
-        self.skipTest('ToDo')
+        # self.skipTest('ToDo')
+        self.assertTrue(False)
 
     def test__create(self):
         self.skipTest('ToDo')
