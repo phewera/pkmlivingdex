@@ -1,6 +1,6 @@
 from typing import Dict, Union, TypedDict
 
-from sqlalchemy import Integer, String, ForeignKey, Boolean
+from sqlalchemy import Integer, String, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
 from sqlalchemy.orm.relationships import Relationship
 
@@ -9,20 +9,19 @@ class TPokedexData(TypedDict):
     title: str
 
 
-class TGenerationData(TPokedexData):
+class TGenerationData(TypedDict):
     number: int
-    name: str
     sprite: str
-    pokedex_id: int
+    pokedex_id: str
 
 
-class TDexEntryData(TPokedexData):
+class TDexEntryData(TypedDict):
     number: int
     name: str
     generation_id: str
 
 
-class TPokemonData(TPokedexData):
+class TPokemonData(TypedDict):
     form: int
     sprite: str
     caught: bool
@@ -64,10 +63,10 @@ class Pokedex(Base):
 
 class Generation(Base):
     __tablename__ = 'generation'
+    __table_args__ = (UniqueConstraint('number', 'pokedex_id'),)
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     # Metadata
     number = mapped_column(Integer)
-    name = mapped_column(String)
     sprite = mapped_column(String)
     # parent
     pokedex_id = mapped_column(ForeignKey("pokedex.id"))
@@ -78,6 +77,7 @@ class Generation(Base):
 
 class DexEntry(Base):
     __tablename__ = 'dexentry'
+    __table_args__ = (UniqueConstraint('number', 'generation_id'),)
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     # Metadata
     number = mapped_column(Integer)
@@ -91,6 +91,7 @@ class DexEntry(Base):
 
 class Pokemon(Base):
     __tablename__ = 'pokemon'
+    __table_args__ = (UniqueConstraint('form', 'dexentry_id'),)
     id = mapped_column(Integer, primary_key=True, autoincrement=True)
     # Metadata
     form = mapped_column(Integer)

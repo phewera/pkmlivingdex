@@ -1,17 +1,16 @@
 import os
 from typing import Dict, Any, List, Union, Optional, TypeVar, Type
-from database import logger
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker, Session
 
+from database import logger
 from database.config import TAvailableEnvironments, Environments
 from database.models import Base, Pokedex, Generation, DexEntry, Pokemon
-from database.models import TPokedexData, TGenerationData, TDexEntryData, TPokemonData
-from database.exceptions import DatabaseError
-from sqlalchemy.exc import IntegrityError
+from database.models import TPokedexData, TGenerationData
 
 WORKING_DIR = os.path.dirname(os.path.abspath(__file__))
 ModelInstance = TypeVar("ModelInstance", bound=Base)
@@ -47,10 +46,14 @@ class DatabaseManager:
     def create_pokedex(self, data: TPokedexData) -> Optional[Pokedex]:
         return self._create(Pokedex, data)
 
-    def create_generation(self) -> Generation:
-        pass
+    def create_generation(self, data: TGenerationData) -> Optional[Generation]:
+        pokedex = self._get(model=Pokedex, _id=data.get('pokedex_id'))
+        if not pokedex:
+            logger.error(f'Can not create "{Generation.__name__}", missing "{Pokedex.__name__}" reference.')
+            return None
+        return self._create(Generation, data)
 
-    def create_dexentry(self, data: Dict[str, Any]) -> DexEntry:
+    def create_dexentry(self, data: Dict[str, Any]) -> Optional[DexEntry]:
         pass
 
     def create_pokemon(self) -> Pokemon:
@@ -69,9 +72,10 @@ class DatabaseManager:
 
         return obj
 
-    def _get(self, model: Type[Base], _id: str = None) -> Union[Optional[ModelInstance], List[Optional[ModelInstance]]]:
-        if _id:
-            return self.session.query(model).filter_by(id=_id).first() or None
+    def _get(self, model: Type[Base], _id: str) -> Union[Optional[ModelInstance]]:
+        return self.session.query(model).filter_by(id=_id).first() or None
+
+    def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
         return self.session.query(model).all() or list()
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):

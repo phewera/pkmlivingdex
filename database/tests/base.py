@@ -1,13 +1,18 @@
 import os
-from typing import Optional, NoReturn
+from typing import Optional, NoReturn, Dict, Type, Any
 from unittest import TestCase
 
-from database.manager import DatabaseManager
-from database.models import Base, Pokedex
-from database.models import TPokedexData
+from database.manager import DatabaseManager, ModelInstance
+from database.models import Base, TPokedexData, TGenerationData
 
-POKEDEX_DATA = {
+POKEDEX_DATA: TPokedexData = {
     'title': 'test-pokedex'
+}
+
+GENERATION_DATA: TGenerationData = {
+    'number': 1,
+    'sprite': 'gen_1.png',
+    'pokedex_id': ''
 }
 
 
@@ -27,10 +32,8 @@ class DatabaseTestCase(TestCase):
             self.db.session.execute(tbl.delete())
         self.db.session.commit()
 
-    def create_pokedex(self, data: Optional[TPokedexData] = None) -> Pokedex:
-        if not data:
-            data = POKEDEX_DATA
-        obj = Pokedex(**data)
+    def create_obj(self, model: Type[Base], data: Dict[str, Any]) -> Optional[ModelInstance]:
+        obj = model(**data)
         self.db.session.add(obj)
         self.db.session.commit()
         return obj
