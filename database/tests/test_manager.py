@@ -1,5 +1,5 @@
-from database.models import Pokedex, Generation, DexEntry
-from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA
+from database.models import Pokedex, Generation, DexEntry, Pokemon
+from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA, POKEMON_DATA
 
 
 class TestDatabaseManager(DatabaseTestCase):
@@ -20,6 +20,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         self.assertIsInstance(result, Pokedex)
         self.assertEqual(result.title, data['title'])
 
@@ -40,6 +41,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         self.assertIsNone(result)
 
     def test_create_generation(self):
@@ -54,6 +56,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 0)
 
@@ -63,6 +66,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         self.assertIsInstance(result, Generation)
         self.assertEqual(result.number, data['number'])
         self.assertEqual(result.sprite, data['sprite'])
@@ -83,8 +87,10 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
         self.assertNotEqual(generation.number, data['number'])
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
 
@@ -94,6 +100,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 2)
+
         self.assertIsInstance(result, Generation)
         self.assertEqual(result.number, data['number'])
         self.assertEqual(result.sprite, data['sprite'])
@@ -111,6 +118,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 0)
 
@@ -119,9 +127,10 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_generation(data)
 
         # post condition
-        self.assertIsNone(result)
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 0)
+
+        self.assertIsNone(result)
 
     def test_create_generation__invalid_pokedex_reference(self):
         # setup
@@ -135,6 +144,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 0)
 
@@ -142,9 +152,10 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_generation(data)
 
         # post condition
-        self.assertIsNone(result)
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 0)
+
+        self.assertIsNone(result)
 
     def test_create_generation__number_already_exists(self):
         pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
@@ -158,6 +169,7 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
 
@@ -165,9 +177,10 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_generation(data)
 
         # post condition
-        self.assertIsNone(result)
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
+        self.assertIsNone(result)
 
     def test_create_dexentry(self):
         # setup
@@ -182,10 +195,13 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 0)
 
@@ -195,6 +211,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 1)
+
         self.assertIsInstance(result, DexEntry)
         self.assertEqual(result.number, data['number'])
         self.assertEqual(result.name, data['name'])
@@ -217,10 +234,13 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
         self.assertEqual(dexentry.generation_id, generation.id)
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 1)
 
@@ -230,6 +250,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 2)
+
         self.assertIsInstance(result, DexEntry)
         self.assertEqual(result.number, data['number'])
         self.assertEqual(result.name, data['name'])
@@ -248,10 +269,13 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 0)
 
@@ -260,9 +284,10 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_dexentry(data)
 
         # post condition
-        self.assertIsNone(result)
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 0)
+
+        self.assertIsNone(result)
 
     def test_create_dexentry__invalid_generation_reference(self):
         # setup
@@ -277,10 +302,13 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 0)
 
@@ -288,9 +316,10 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_dexentry(data)
 
         # post condition
-        self.assertIsNone(result)
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 0)
+
+        self.assertIsNone(result)
 
     def test_create_dexentry__number_already_exists(self):
         # setup
@@ -307,10 +336,13 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
         self.assertEqual(dexentry.generation_id, generation.id)
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 1)
 
@@ -318,20 +350,72 @@ class TestDatabaseManager(DatabaseTestCase):
         result = self.db.create_dexentry(data)
 
         # post condition
-        self.assertIsNone(result)
         dexentries = self.db.session.query(DexEntry).all()
         self.assertEqual(len(dexentries), 1)
 
+        self.assertIsNone(result)
+
     def test_create_pokemon(self):
-        self.skipTest('ToDo')
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        generation: Generation = self.create_obj(Generation, GENERATION_DATA)
+        generation.pokedex_id = pokedex.id
+        dexentry: DexEntry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry.generation_id = generation.id
+        data = {
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'caught': False,
+            'shiny_caught': False,
+            'lgplge': True,
+            'swsh': True,
+            'bdsp': True,
+            'sv': False,
+            'dexentry_id': dexentry.id,
+        }
+
+        # pre condition
+        self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertEqual(dexentry.generation_id, generation.id)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
+        # do it
+        result = self.db.create_pokemon(data)
+
+        # post condition
+        dexentries = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertIsInstance(result, Pokemon)
+        self.assertEqual(result.form, data['form'])
+        self.assertEqual(result.sprite, data['sprite'])
+        self.assertEqual(result.caught, data['caught'])
+        self.assertEqual(result.shiny_caught, data['shiny_caught'])
+        self.assertEqual(result.lgplge, data['lgplge'])
+        self.assertEqual(result.swsh, data['swsh'])
+        self.assertEqual(result.bdsp, data['bdsp'])
+        self.assertEqual(result.sv, data['sv'])
+        self.assertEqual(result.dexentry_id, data['dexentry_id'])
+        self.assertEqual(result.dexentry, dexentry)
 
     def test__create(self):
         self.skipTest('ToDo')
 
-    def test__get__by_id(self):
+    def test__get_by_id(self):
         self.skipTest('ToDo')
 
-    def test__get__all(self):
+    def test__get_all(self):
         self.skipTest('ToDo')
 
     def test__format_data(self):
