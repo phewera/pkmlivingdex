@@ -5,7 +5,7 @@ from unittest import TestLoader, TextTestRunner
 
 def run_tests():
     loader = TestLoader()
-    runner = TextTestRunner()
+    runner = TextTestRunner(verbosity=2)
     suite = loader.discover(
         start_dir=os.getcwd(),
         pattern='test_*.py'
