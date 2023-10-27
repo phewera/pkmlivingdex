@@ -3,7 +3,7 @@ from typing import Optional, NoReturn, Dict, Type, Any
 from unittest import TestCase
 
 from database.manager import DatabaseManager, ModelInstance
-from database.models import Base, TPokedexData, TGenerationData
+from database.models import Base, TPokedexData, TGenerationData, TDexEntryData
 
 POKEDEX_DATA: TPokedexData = {
     'title': 'test-pokedex'
@@ -13,6 +13,12 @@ GENERATION_DATA: TGenerationData = {
     'number': 1,
     'sprite': 'gen_1.png',
     'pokedex_id': ''
+}
+
+DEXENTRY_DATA: TDexEntryData = {
+    'number': 1,
+    'name': 'Bulbasaur',
+    'generation_id': ''
 }
 
 

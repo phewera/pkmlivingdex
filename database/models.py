@@ -12,13 +12,13 @@ class TPokedexData(TypedDict):
 class TGenerationData(TypedDict):
     number: int
     sprite: str
-    pokedex_id: str
+    pokedex_id: int
 
 
 class TDexEntryData(TypedDict):
     number: int
     name: str
-    generation_id: str
+    generation_id: int
 
 
 class TPokemonData(TypedDict):
@@ -30,7 +30,7 @@ class TPokemonData(TypedDict):
     swsh: bool
     bdsp: bool
     sv: bool
-    dexentry_id: str
+    dexentry_id: int
 
 
 class Base(DeclarativeBase):

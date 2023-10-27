@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from database import logger
 from database.config import TAvailableEnvironments, Environments
 from database.models import Base, Pokedex, Generation, DexEntry, Pokemon
-from database.models import TPokedexData, TGenerationData
+from database.models import TPokedexData, TGenerationData, TDexEntryData, TPokemonData
 
 WORKING_DIR = os.path.dirname(os.path.abspath(__file__))
 ModelInstance = TypeVar("ModelInstance", bound=Base)
@@ -47,17 +47,19 @@ class DatabaseManager:
         return self._create(Pokedex, data)
 
     def create_generation(self, data: TGenerationData) -> Optional[Generation]:
-        pokedex = self._get(model=Pokedex, _id=data.get('pokedex_id'))
-        if not pokedex:
-            logger.error(f'Can not create "{Generation.__name__}", missing "{Pokedex.__name__}" reference.')
+        if not self._validate_reference(model=Pokedex, _id=data.get('pokedex_id')):
             return None
         return self._create(Generation, data)
 
-    def create_dexentry(self, data: Dict[str, Any]) -> Optional[DexEntry]:
-        pass
+    def create_dexentry(self, data: TDexEntryData) -> Optional[DexEntry]:
+        if not self._validate_reference(model=Generation, _id=data.get('generation_id')):
+            return None
+        return self._create(DexEntry, data)
 
-    def create_pokemon(self) -> Pokemon:
-        pass
+    def create_pokemon(self, data: TPokemonData) -> Optional[Pokemon]:
+        if not self._validate_reference(model=DexEntry, _id=data.get('dexentry_id')):
+            return None
+        return self._create(Pokemon, data)
 
     def _create(self, model: Type[Base], data: Dict[str, Any]) -> Optional[ModelInstance]:
         try:
@@ -77,6 +79,12 @@ class DatabaseManager:
 
     def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
         return self.session.query(model).all() or list()
+
+    def _validate_reference(self, model: Type[Base], _id: str) -> bool:
+        if not self._get(model=model, _id=_id):
+            logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
+            return False
+        return True
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):
         pass
