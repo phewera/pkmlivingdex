@@ -142,6 +142,8 @@ class TestDatabaseManager(DatabaseTestCase):
         }
 
         # pre condition
+        self.assertIsNone(self.db._get(model=Pokedex, _id=data['pokedex_id']))
+
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
 
@@ -302,6 +304,7 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # pre condition
         self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertIsNone(self.db._get(model=Generation, _id=data['generation_id']))
 
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
@@ -408,6 +411,198 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(result.sv, data['sv'])
         self.assertEqual(result.dexentry_id, data['dexentry_id'])
         self.assertEqual(result.dexentry, dexentry)
+
+    def test_create_pokemon__two_pokemon(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        generation: Generation = self.create_obj(Generation, GENERATION_DATA)
+        generation.pokedex_id = pokedex.id
+        dexentry: DexEntry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry.generation_id = generation.id
+        pokemon: Pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+        pokemon.dexentry_id = dexentry.id
+        data = {
+            'form': 2,
+            'sprite': 'bulbasaur_2.png',
+            'caught': False,
+            'shiny_caught': False,
+            'lgplge': True,
+            'swsh': False,
+            'bdsp': False,
+            'sv': False,
+            'dexentry_id': dexentry.id,
+        }
+
+        # pre condition
+        self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertEqual(dexentry.generation_id, generation.id)
+        self.assertEqual(pokemon.dexentry_id, dexentry.id)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.create_pokemon(data)
+
+        # post condition
+        dexentries = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(dexentries), 2)
+
+        self.assertIsInstance(result, Pokemon)
+        self.assertEqual(result.form, data['form'])
+        self.assertEqual(result.sprite, data['sprite'])
+        self.assertEqual(result.caught, data['caught'])
+        self.assertEqual(result.shiny_caught, data['shiny_caught'])
+        self.assertEqual(result.lgplge, data['lgplge'])
+        self.assertEqual(result.swsh, data['swsh'])
+        self.assertEqual(result.bdsp, data['bdsp'])
+        self.assertEqual(result.sv, data['sv'])
+        self.assertEqual(result.dexentry_id, data['dexentry_id'])
+        self.assertEqual(result.dexentry, dexentry)
+
+    def test_create_pokemon__missing_dexentry_reference(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        generation: Generation = self.create_obj(Generation, GENERATION_DATA)
+        generation.pokedex_id = pokedex.id
+        dexentry: DexEntry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry.generation_id = generation.id
+        data = {
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'caught': False,
+            'shiny_caught': False,
+            'lgplge': True,
+            'swsh': True,
+            'bdsp': True,
+            'sv': False
+        }
+
+        # pre condition
+        self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertEqual(dexentry.generation_id, generation.id)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
+        # do it
+        # noinspection PyTypeChecker
+        result = self.db.create_pokemon(data)
+
+        # post condition
+        dexentries = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(dexentries), 0)
+
+        self.assertIsNone(result)
+
+    def test_create_pokemon__invalid_dexentry_reference(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        generation: Generation = self.create_obj(Generation, GENERATION_DATA)
+        generation.pokedex_id = pokedex.id
+        dexentry: DexEntry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry.generation_id = generation.id
+        data = {
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'caught': False,
+            'shiny_caught': False,
+            'lgplge': True,
+            'swsh': True,
+            'bdsp': True,
+            'sv': False,
+            'dexentry_id': 0000
+        }
+
+        # pre condition
+        self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertEqual(dexentry.generation_id, generation.id)
+        self.assertIsNone(self.db._get(model=DexEntry, _id=data['dexentry_id']))
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
+        # do it
+        result = self.db.create_pokemon(data)
+
+        # post condition
+        dexentries = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(dexentries), 0)
+
+        self.assertIsNone(result)
+
+    def test_create_pokemon__form_already_exists(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        generation: Generation = self.create_obj(Generation, GENERATION_DATA)
+        generation.pokedex_id = pokedex.id
+        dexentry: DexEntry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry.generation_id = generation.id
+        data = {
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'caught': False,
+            'shiny_caught': False,
+            'lgplge': True,
+            'swsh': True,
+            'bdsp': True,
+            'sv': False,
+            'dexentry_id': dexentry.id,
+        }
+        pokemon: Pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+
+        # pre condition
+        self.assertEqual(generation.pokedex_id, pokedex.id)
+        self.assertEqual(dexentry.generation_id, generation.id)
+        self.assertEqual(pokemon.dexentry_id, dexentry.id)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.create_pokemon(data)
+
+        # post condition
+        dexentries = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertIsNone(result)
 
     def test__create(self):
         self.skipTest('ToDo')
