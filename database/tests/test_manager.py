@@ -607,8 +607,33 @@ class TestDatabaseManager(DatabaseTestCase):
     def test__create(self):
         self.skipTest('ToDo')
 
-    def test__get_by_id(self):
-        self.skipTest('ToDo')
+    def test__get(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._get(model=Pokedex, _id=pokedex.id)
+
+        # post condition
+        self.assertEqual(result, pokedex)
+
+    def test__get__no_results(self):
+        # setup
+        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._get(model=Pokedex, _id=0000)
+
+        # post condition
+        self.assertIsNone(result)
 
     def test__get_all(self):
         self.skipTest('ToDo')
