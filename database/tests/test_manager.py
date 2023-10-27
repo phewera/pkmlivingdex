@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from database.models import Pokedex, Generation, DexEntry, Pokemon
 from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA, POKEMON_DATA
 
@@ -607,6 +609,9 @@ class TestDatabaseManager(DatabaseTestCase):
     def test__create(self):
         self.skipTest('ToDo')
 
+    def test__create__IntegrityError(self):
+        self.skipTest('ToDo')
+
     def test__get(self):
         # setup
         pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
@@ -621,9 +626,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         self.assertEqual(result, pokedex)
 
-    def test__get__no_results(self):
+    def test__get__no_result(self):
         # setup
-        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        self.create_obj(Pokedex, POKEDEX_DATA)
 
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
@@ -636,7 +641,35 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertIsNone(result)
 
     def test__get_all(self):
-        self.skipTest('ToDo')
+        # setup
+        pokedex1: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+
+        data = deepcopy(POKEDEX_DATA)
+        data['title'] = 'test-pokedex-2'
+        pokedex2: Pokedex = self.create_obj(Pokedex, data)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 2)
+
+        # do it
+        result = self.db._get_all(model=Pokedex)
+
+        # post condition
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], pokedex1)
+        self.assertEqual(result[1], pokedex2)
+
+    def test__get_all__no_results(self):
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+        # do it
+        result = self.db._get_all(model=Pokedex)
+
+        # post condition
+        self.assertEqual(len(result), 0)
 
     def test__format_data(self):
         self.skipTest('ToDo')
