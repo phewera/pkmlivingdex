@@ -12,13 +12,13 @@ POKEDEX_DATA: TPokedexData = {
 GENERATION_DATA: TGenerationData = {
     'number': 1,
     'sprite': 'gen_1.png',
-    'pokedex_id': ''
+    'pokedex_id': 1
 }
 
 DEXENTRY_DATA: TDexEntryData = {
     'number': 1,
     'name': 'Bulbasaur',
-    'generation_id': ''
+    'generation_id': 1
 }
 
 

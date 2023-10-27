@@ -74,13 +74,13 @@ class DatabaseManager:
 
         return obj
 
-    def _get(self, model: Type[Base], _id: str) -> Union[Optional[ModelInstance]]:
+    def _get(self, model: Type[Base], _id: int) -> Union[Optional[ModelInstance]]:
         return self.session.query(model).filter_by(id=_id).first() or None
 
     def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
         return self.session.query(model).all() or list()
 
-    def _validate_reference(self, model: Type[Base], _id: str) -> bool:
+    def _validate_reference(self, model: Type[Base], _id: int) -> bool:
         if not self._get(model=model, _id=_id):
             logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
             return False
