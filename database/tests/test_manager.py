@@ -673,3 +673,49 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__format_data(self):
         self.skipTest('ToDo')
+
+    def test__validate_reference(self):
+        # setup
+        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+        self.assertEqual(pokedex, pokedexes[0])
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=pokedex.id)
+
+        # post condition
+        self.assertTrue(result)
+
+    def test__validate_reference__reference_not_found(self):
+        # setup
+        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
+        test_id = 0000
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+        self.assertEqual(pokedex, pokedexes[0])
+        self.assertNotEqual(pokedex.id, test_id)
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=test_id)
+
+        # post condition
+        self.assertFalse(result)
+
+    def test__validate_reference__no_data_available(self):
+        # setup
+        test_id = 0000
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=test_id)
+
+        # post condition
+        self.assertFalse(result)
