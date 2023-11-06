@@ -1,4 +1,4 @@
-from typing import Dict, Union, TypedDict, Any, List
+from typing import Dict, Union, TypedDict, Any, List, NotRequired
 
 from sqlalchemy import Integer, String, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
@@ -6,22 +6,31 @@ from sqlalchemy.orm.relationships import Relationship
 
 
 class TPokedexData(TypedDict):
+    id: NotRequired[int]
     title: str
+    generations: NotRequired[Relationship]
 
 
 class TGenerationData(TypedDict):
+    id: NotRequired[int]
     number: int
     sprite: str
     pokedex_id: int
+    pokedex: NotRequired[Relationship]
+    dexentries: NotRequired[Relationship]
 
 
 class TDexEntryData(TypedDict):
+    id: NotRequired[int]
     number: int
     name: str
     generation_id: int
+    generation: NotRequired[Relationship]
+    pokemons: NotRequired[Relationship]
 
 
 class TPokemonData(TypedDict):
+    id: NotRequired[int]
     form: int
     sprite: str
     caught: bool
@@ -31,6 +40,7 @@ class TPokemonData(TypedDict):
     bdsp: bool
     sv: bool
     dexentry_id: int
+    dexentry: NotRequired[Relationship]
 
 
 class Base(DeclarativeBase):

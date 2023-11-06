@@ -1,12 +1,15 @@
-![python](https://img.shields.io/badge/Python-3.10-blue)
+![python](https://img.shields.io/badge/Python-3.12-blue)
 [![main](https://github.com/phewera/pkmlivingdex/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/phewera/pkmlivingdex/actions/workflows/main.yml)
 
 # Pokemon Living Dex
 
 ## Install dependencies
 
+### Python
 ```shell
-sudo apt-get install python3-pip
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12 python3-pip
 sudo pip3 install virtualenv 
 ```
 
