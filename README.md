@@ -3,15 +3,30 @@
 
 # Pokemon Living Dex
 
-## Install
+## Install dependencies
 
-### Run `bootstrap.sh`
+TODO
+
+## Run with docker
+
+TODO
+
+## Run local
+
+### Install backend
+
+#### Run `bootstrap.sh`
 
 ```shell
+cd backend
 ./bootstrap.sh
 ```
 
-## Run application
+### Install frontend
+
+TODO
+
+### Start services
 
 TODO
 
@@ -24,6 +39,8 @@ TODO
 ### Run unittests
 
 ```shell
+cd backend
+./bootstrap.sh
 source .venv/bin/activate
 python testing.py
 ```
