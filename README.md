@@ -5,7 +5,10 @@
 
 ## Install dependencies
 
-TODO
+```shell
+sudo apt-get install python3-pip
+sudo pip3 install virtualenv 
+```
 
 ## Run with docker
 
