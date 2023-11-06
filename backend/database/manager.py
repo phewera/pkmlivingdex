@@ -74,17 +74,39 @@ class DatabaseManager:
 
         return obj
 
-    def _get(self, model: Type[Base], _id: int) -> Union[Optional[ModelInstance]]:
-        return self.session.query(model).filter_by(id=_id).first() or None
-
-    def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
-        return self.session.query(model).all() or list()
-
     def _validate_reference(self, model: Type[Base], _id: int) -> bool:
         if not self._get(model=model, _id=_id):
             logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
             return False
         return True
+
+    def update_pokedex(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Pokedex, _id=_id, data=data)
+
+    def update_generation(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Generation, _id=_id, data=data)
+
+    def update_dexentry(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=DexEntry, _id=_id, data=data)
+
+    def update_pokemon(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Pokemon, _id=_id, data=data)
+
+    def _update(self, model: Type[Base], _id: int, data: Dict[str, Any]) -> bool:
+        obj = self._get(model=model, _id=_id)
+        if not obj:
+            logger.error(f'"{model.__name__}" with ID "{_id}" could not be found.')
+            return False
+
+        obj.update(data)
+        self.session.commit()
+        return True
+
+    def _get(self, model: Type[Base], _id: int) -> Union[Optional[ModelInstance]]:
+        return self.session.query(model).filter_by(id=_id).first() or None
+
+    def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
+        return self.session.query(model).all() or list()
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):
         pass

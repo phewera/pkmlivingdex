@@ -607,10 +607,265 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertIsNone(result)
 
     def test__create(self):
-        self.skipTest('ToDo')
+        # setup
+        data = {
+            'title': 'pokedex-1'
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+        # do it
+        result = self.db._create(model=Pokedex, data=data)
+
+        # post condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        self.assertIsInstance(result, Pokedex)
+        self.assertEqual(result.title, data['title'])
 
     def test__create__IntegrityError(self):
-        self.skipTest('ToDo')
+        # setup
+        data = {
+            'title': 'pokedex-1'
+        }
+        self.create_obj(Pokedex, data)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._create(model=Pokedex, data=data)
+
+        # post condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        self.assertIsNone(result)
+
+    def test__validate_reference(self):
+        # setup
+        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+        self.assertEqual(pokedex, pokedexes[0])
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=pokedex.id)
+
+        # post condition
+        self.assertTrue(result)
+
+    def test__validate_reference__reference_not_found(self):
+        # setup
+        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
+        test_id = 0000
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+        self.assertEqual(pokedex, pokedexes[0])
+        self.assertNotEqual(pokedex.id, test_id)
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=test_id)
+
+        # post condition
+        self.assertFalse(result)
+
+    def test__validate_reference__no_data_available(self):
+        # setup
+        test_id = 0000
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+        # do it
+        result = self.db._validate_reference(model=Pokedex, _id=test_id)
+
+        # post condition
+        self.assertFalse(result)
+
+    def test_update_pokedex(self):
+        # setup
+        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        update_data = {
+            'title': 'test-pokedex-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokedex.title, update_data['title'])
+
+        # do it
+        result = self.db.update_pokedex(_id=pokedex.id, data=update_data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(pokedex.title, update_data['title'])
+
+    def test_update_pokedex__invalid_id(self):
+        # setup
+        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        invalid_id = 0000
+        update_data = {
+            'title': 'test-pokedex-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokedex.title, update_data['title'])
+
+        # do it
+        result = self.db.update_pokedex(_id=invalid_id, data=update_data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertNotEqual(pokedex.title, update_data['title'])
+
+    def test_update_generation(self):
+        # setup
+        generation = self.create_obj(Generation, GENERATION_DATA)
+        update_data = {
+            'sprite': 'gen_1-changed.png'
+        }
+
+        # pre condition
+        self.assertNotEqual(generation.sprite, update_data['sprite'])
+
+        # do it
+        result = self.db.update_generation(_id=generation.id, data=update_data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(generation.sprite, update_data['sprite'])
+
+    def test_update_generation__invalid_id(self):
+        # setup
+        generation = self.create_obj(Generation, GENERATION_DATA)
+        invalid_id = 0000
+        update_data = {
+            'sprite': 'gen_1-changed.png'
+        }
+
+        # pre condition
+        self.assertNotEqual(generation.sprite, update_data['sprite'])
+
+        # do it
+        result = self.db.update_generation(_id=invalid_id, data=update_data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertNotEqual(generation.sprite, update_data['sprite'])
+
+    def test_update_dexentry(self):
+        # setup
+        dexentry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        update_data = {
+            'name': 'Bulbasaur-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(dexentry.name, update_data['name'])
+
+        # do it
+        result = self.db.update_dexentry(_id=dexentry.id, data=update_data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(dexentry.name, update_data['name'])
+
+    def test_update_dexentry__invalid_id(self):
+        # setup
+        dexentry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        invalid_id = 0000
+        update_data = {
+            'name': 'Bulbasaur-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(dexentry.name, update_data['name'])
+
+        # do it
+        result = self.db.update_dexentry(_id=invalid_id, data=update_data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertNotEqual(dexentry.name, update_data['name'])
+
+    def test_update_pokemon(self):
+        # setup
+        pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+        update_data = {
+            'sprite': 'bulbasaur_1-changed.png'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokemon.sprite, update_data['sprite'])
+
+        # do it
+        result = self.db.update_pokemon(_id=pokemon.id, data=update_data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(pokemon.sprite, update_data['sprite'])
+
+    def test_update_pokemon__invalid_id(self):
+        # setup
+        pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+        invalid_id = 0000
+        update_data = {
+            'sprite': 'bulbasaur_1-changed.png'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokemon.sprite, update_data['sprite'])
+
+        # do it
+        result = self.db.update_pokemon(_id=invalid_id, data=update_data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertNotEqual(pokemon.sprite, update_data['sprite'])
+
+    def test__update(self):
+        # setup
+        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        update_data = {
+            'title': 'test-pokedex-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokedex.title, update_data['title'])
+
+        # do it
+        result = self.db._update(model=Pokedex, _id=pokedex.id, data=update_data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(pokedex.title, update_data['title'])
+
+    def test__update__invalid_id(self):
+        # setup
+        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        invalid_id = 0000
+        update_data = {
+            'title': 'test-pokedex-changed'
+        }
+
+        # pre condition
+        self.assertNotEqual(pokedex.title, update_data['title'])
+
+        # do it
+        result = self.db._update(model=Pokedex, _id=invalid_id, data=update_data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertNotEqual(pokedex.title, update_data['title'])
 
     def test__get(self):
         # setup
@@ -674,48 +929,4 @@ class TestDatabaseManager(DatabaseTestCase):
     def test__format_data(self):
         self.skipTest('ToDo')
 
-    def test__validate_reference(self):
-        # setup
-        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
 
-        # pre condition
-        pokedexes = self.db.session.query(Pokedex).all()
-        self.assertEqual(len(pokedexes), 1)
-        self.assertEqual(pokedex, pokedexes[0])
-
-        # do it
-        result = self.db._validate_reference(model=Pokedex, _id=pokedex.id)
-
-        # post condition
-        self.assertTrue(result)
-
-    def test__validate_reference__reference_not_found(self):
-        # setup
-        pokedex = self.create_obj(model=Pokedex, data=POKEDEX_DATA)
-        test_id = 0000
-
-        # pre condition
-        pokedexes = self.db.session.query(Pokedex).all()
-        self.assertEqual(len(pokedexes), 1)
-        self.assertEqual(pokedex, pokedexes[0])
-        self.assertNotEqual(pokedex.id, test_id)
-
-        # do it
-        result = self.db._validate_reference(model=Pokedex, _id=test_id)
-
-        # post condition
-        self.assertFalse(result)
-
-    def test__validate_reference__no_data_available(self):
-        # setup
-        test_id = 0000
-
-        # pre condition
-        pokedexes = self.db.session.query(Pokedex).all()
-        self.assertEqual(len(pokedexes), 0)
-
-        # do it
-        result = self.db._validate_reference(model=Pokedex, _id=test_id)
-
-        # post condition
-        self.assertFalse(result)

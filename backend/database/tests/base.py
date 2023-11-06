@@ -41,6 +41,7 @@ class DatabaseTestCase(TestCase):
         self.db = DatabaseManager(env='testing')
 
     def tearDown(self) -> None:
+        self.db.session.close()
         os.remove(self.db.db_path)
 
     def clear_tables(self) -> NoReturn:

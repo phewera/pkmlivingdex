@@ -1,4 +1,4 @@
-from typing import Dict, Union, TypedDict
+from typing import Dict, Union, TypedDict, Any, List
 
 from sqlalchemy import Integer, String, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
@@ -50,6 +50,24 @@ class Base(DeclarativeBase):
             data[column.key] = value
 
         return data
+
+    # noinspection PyTypeChecker
+    def get_field_ids(self) -> List[str]:
+        return [column.key for column in self.__mapper__.attrs]
+
+    def update(self, data: Dict[str, Any]) -> bool:
+        field_ids = self.get_field_ids()
+        updated = False
+
+        for key, value in data.items():
+            if key not in field_ids:
+                continue
+
+            if value != getattr(self, key):
+                setattr(self, key, value)
+                updated = True
+
+        return updated
 
 
 class Pokedex(Base):
