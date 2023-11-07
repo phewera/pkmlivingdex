@@ -45,7 +45,7 @@ class TPokemonData(TypedDict):
 
 class Base(DeclarativeBase):
 
-    def __data__(self, json_friendly: bool = False) -> Dict[str, Union[int, str, bool, Relationship]]:
+    def get_data(self, json_friendly: bool = False) -> Dict[str, Union[int, str, bool, Relationship]]:
         data = dict()
 
         # noinspection PyTypeChecker

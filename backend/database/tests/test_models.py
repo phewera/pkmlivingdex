@@ -28,11 +28,44 @@ class TestDatabaseModels(DatabaseTestCase):
             data=POKEMON_DATA
         )
 
-    def test__data__(self):
-        self.skipTest('TODO')
+    def test_get_data(self):
+        # do it
+        result = self.pokemon.get_data()
 
-    def test__data__json_friendly(self):
-        self.skipTest('TODO')
+        # post condition
+        expected_keys = set(TPokemonData.__annotations__.keys())
+        self.assertEqual(set(result.keys()), expected_keys)
+
+        self.assertEqual(result['id'], self.pokemon.id)
+        self.assertEqual(result['form'], self.pokemon.form)
+        self.assertEqual(result['sprite'], self.pokemon.sprite)
+        self.assertEqual(result['caught'], self.pokemon.caught)
+        self.assertEqual(result['shiny_caught'], self.pokemon.shiny_caught)
+        self.assertEqual(result['lgplge'], self.pokemon.lgplge)
+        self.assertEqual(result['swsh'], self.pokemon.swsh)
+        self.assertEqual(result['bdsp'], self.pokemon.bdsp)
+        self.assertEqual(result['dexentry_id'], self.pokemon.dexentry_id)
+        self.assertEqual(result['dexentry'], self.pokemon.dexentry)
+
+    def test_get_data__json_friendly(self):
+        # do it
+        result = self.pokemon.get_data(json_friendly=True)
+
+        # post condition
+        expected_keys = set(TPokemonData.__annotations__.keys())
+        expected_keys.remove('dexentry')
+        self.assertEqual(set(result.keys()), expected_keys)
+        self.assertNotIn('dexentry', list(result.keys()))
+
+        self.assertEqual(result['id'], self.pokemon.id)
+        self.assertEqual(result['form'], self.pokemon.form)
+        self.assertEqual(result['sprite'], self.pokemon.sprite)
+        self.assertEqual(result['caught'], self.pokemon.caught)
+        self.assertEqual(result['shiny_caught'], self.pokemon.shiny_caught)
+        self.assertEqual(result['lgplge'], self.pokemon.lgplge)
+        self.assertEqual(result['swsh'], self.pokemon.swsh)
+        self.assertEqual(result['bdsp'], self.pokemon.bdsp)
+        self.assertEqual(result['dexentry_id'], self.pokemon.dexentry_id)
 
     def test_get_field_ids__pokedex(self):
         # do it
@@ -67,10 +100,49 @@ class TestDatabaseModels(DatabaseTestCase):
         self.assertEqual(set(result), expected_field_ids)
 
     def test_update(self):
-        self.skipTest('TODO')
+        # setup
+        data = {
+            'sprite': 'bulbasaur_1-changed.png'
+        }
+
+        # pre condition
+        self.assertNotEqual(self.pokemon.sprite, data['sprite'])
+
+        # do it
+        result = self.pokemon.update(data)
+
+        # post condition
+        self.assertTrue(result)
+        self.assertEqual(self.pokemon.sprite, data['sprite'])
 
     def test_update__nothing_to_update(self):
-        self.skipTest('TODO')
+        # setup
+        data = {
+            'sprite': 'bulbasaur_1.png'
+        }
+
+        # pre condition
+        self.assertEqual(self.pokemon.sprite, data['sprite'])
+
+        # do it
+        result = self.pokemon.update(data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertEqual(self.pokemon.sprite, data['sprite'])
 
     def test_update__invalid_data(self):
-        self.skipTest('TODO')
+        # setup
+        data = {
+            'unknown_attr': 'test'
+        }
+
+        # pre condition
+        self.assertFalse(hasattr(self.pokemon, 'unknown_attr'))
+
+        # do it
+        result = self.pokemon.update(data)
+
+        # post condition
+        self.assertFalse(result)
+        self.assertFalse(hasattr(self.pokemon, 'unknown_attr'))
