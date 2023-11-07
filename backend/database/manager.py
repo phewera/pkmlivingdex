@@ -43,23 +43,7 @@ class DatabaseManager:
         # init db
         Base.metadata.create_all(self.engine)
 
-    def create_pokedex(self, data: TPokedexData) -> Optional[Pokedex]:
-        return self._create(Pokedex, data)
-
-    def create_generation(self, data: TGenerationData) -> Optional[Generation]:
-        if not self._validate_reference(model=Pokedex, _id=data.get('pokedex_id')):
-            return None
-        return self._create(Generation, data)
-
-    def create_dexentry(self, data: TDexEntryData) -> Optional[DexEntry]:
-        if not self._validate_reference(model=Generation, _id=data.get('generation_id')):
-            return None
-        return self._create(DexEntry, data)
-
-    def create_pokemon(self, data: TPokemonData) -> Optional[Pokemon]:
-        if not self._validate_reference(model=DexEntry, _id=data.get('dexentry_id')):
-            return None
-        return self._create(Pokemon, data)
+    # Basic operations
 
     def _create(self, model: Type[Base], data: Dict[str, Any]) -> Optional[ModelInstance]:
         try:
@@ -74,24 +58,6 @@ class DatabaseManager:
 
         return obj
 
-    def _validate_reference(self, model: Type[Base], _id: int) -> bool:
-        if not self._get(model=model, _id=_id):
-            logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
-            return False
-        return True
-
-    def update_pokedex(self, _id: int, data: Dict[str, Any]) -> bool:
-        return self._update(model=Pokedex, _id=_id, data=data)
-
-    def update_generation(self, _id: int, data: Dict[str, Any]) -> bool:
-        return self._update(model=Generation, _id=_id, data=data)
-
-    def update_dexentry(self, _id: int, data: Dict[str, Any]) -> bool:
-        return self._update(model=DexEntry, _id=_id, data=data)
-
-    def update_pokemon(self, _id: int, data: Dict[str, Any]) -> bool:
-        return self._update(model=Pokemon, _id=_id, data=data)
-
     def _update(self, model: Type[Base], _id: int, data: Dict[str, Any]) -> bool:
         obj = self._get(model=model, _id=_id)
         if not obj:
@@ -102,11 +68,27 @@ class DatabaseManager:
         self.session.commit()
         return True
 
+    def _delete(self, model: Type[Base], _id: int) -> bool:
+        obj = self._get(model=model, _id=_id)
+        if not obj:
+            logger.error(f'"{model.__name__}" with ID "{_id}" could not be found.')
+            return False
+
+        self.session.delete(obj)
+        self.session.commit()
+        return True
+
     def _get(self, model: Type[Base], _id: int) -> Union[Optional[ModelInstance]]:
         return self.session.query(model).filter_by(id=_id).first() or None
 
     def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
         return self.session.query(model).all() or list()
+
+    def _validate_reference(self, model: Type[Base], _id: int) -> bool:
+        if not self._get(model=model, _id=_id):
+            logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
+            return False
+        return True
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):
         pass
@@ -117,3 +99,53 @@ class DatabaseManager:
         #         raise
         #     if key not in columns:
         #         raise
+
+    # Pokedex
+
+    def create_pokedex(self, data: TPokedexData) -> Optional[Pokedex]:
+        return self._create(Pokedex, data)
+
+    def update_pokedex(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Pokedex, _id=_id, data=data)
+
+    def delete_pokedex(self, _id) -> bool:
+        return self._delete(model=Pokedex, _id=_id)
+
+    # Generation
+
+    def create_generation(self, data: TGenerationData) -> Optional[Generation]:
+        if not self._validate_reference(model=Pokedex, _id=data.get('pokedex_id')):
+            return None
+        return self._create(Generation, data)
+
+    def update_generation(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Generation, _id=_id, data=data)
+
+    def delete_generation(self, _id) -> bool:
+        return self._delete(model=Generation, _id=_id)
+
+    # DexEntry
+
+    def create_dexentry(self, data: TDexEntryData) -> Optional[DexEntry]:
+        if not self._validate_reference(model=Generation, _id=data.get('generation_id')):
+            return None
+        return self._create(DexEntry, data)
+
+    def update_dexentry(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=DexEntry, _id=_id, data=data)
+
+    def delete_dexentry(self, _id) -> bool:
+        return self._delete(model=DexEntry, _id=_id)
+
+    # Pokemon
+
+    def create_pokemon(self, data: TPokemonData) -> Optional[Pokemon]:
+        if not self._validate_reference(model=DexEntry, _id=data.get('dexentry_id')):
+            return None
+        return self._create(Pokemon, data)
+
+    def update_pokemon(self, _id: int, data: Dict[str, Any]) -> bool:
+        return self._update(model=Pokemon, _id=_id, data=data)
+
+    def delete_pokemon(self, _id) -> bool:
+        return self._delete(model=Pokemon, _id=_id)

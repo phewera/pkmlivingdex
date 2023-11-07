@@ -694,7 +694,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_pokedex(self):
         # setup
-        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
         update_data = {
             'title': 'test-pokedex-changed'
         }
@@ -711,7 +714,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_pokedex__invalid_id(self):
         # setup
-        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
         invalid_id = 0000
         update_data = {
             'title': 'test-pokedex-changed'
@@ -729,7 +735,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_generation(self):
         # setup
-        generation = self.create_obj(Generation, GENERATION_DATA)
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
         update_data = {
             'sprite': 'gen_1-changed.png'
         }
@@ -746,7 +755,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_generation__invalid_id(self):
         # setup
-        generation = self.create_obj(Generation, GENERATION_DATA)
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
         invalid_id = 0000
         update_data = {
             'sprite': 'gen_1-changed.png'
@@ -764,7 +776,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_dexentry(self):
         # setup
-        dexentry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
         update_data = {
             'name': 'Bulbasaur-changed'
         }
@@ -781,7 +796,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_dexentry__invalid_id(self):
         # setup
-        dexentry = self.create_obj(DexEntry, DEXENTRY_DATA)
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
         invalid_id = 0000
         update_data = {
             'name': 'Bulbasaur-changed'
@@ -799,7 +817,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_pokemon(self):
         # setup
-        pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
         update_data = {
             'sprite': 'bulbasaur_1-changed.png'
         }
@@ -816,7 +837,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_update_pokemon__invalid_id(self):
         # setup
-        pokemon = self.create_obj(Pokemon, POKEMON_DATA)
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
         invalid_id = 0000
         update_data = {
             'sprite': 'bulbasaur_1-changed.png'
@@ -834,7 +858,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__update(self):
         # setup
-        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
         update_data = {
             'title': 'test-pokedex-changed'
         }
@@ -851,7 +878,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__update__invalid_id(self):
         # setup
-        pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
         invalid_id = 0000
         update_data = {
             'title': 'test-pokedex-changed'
@@ -869,7 +899,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__get(self):
         # setup
-        pokedex: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex: Pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
 
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
@@ -883,7 +916,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__get__no_result(self):
         # setup
-        self.create_obj(Pokedex, POKEDEX_DATA)
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
 
         # pre condition
         pokedexes = self.db.session.query(Pokedex).all()
@@ -897,7 +933,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__get_all(self):
         # setup
-        pokedex1: Pokedex = self.create_obj(Pokedex, POKEDEX_DATA)
+        pokedex1: Pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
 
         data = deepcopy(POKEDEX_DATA)
         data['title'] = 'test-pokedex-2'
@@ -929,4 +968,207 @@ class TestDatabaseManager(DatabaseTestCase):
     def test__format_data(self):
         self.skipTest('ToDo')
 
+    def test_delete_pokedex(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
 
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db.delete_pokedex(pokedex.id)
+
+        # post condition
+        self.assertTrue(result)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+    def test_delete_pokdex__invalid_id(self):
+        # setup
+        invalid_id = 0000
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db.delete_pokedex(invalid_id)
+
+        # post condition
+        self.assertFalse(result)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+    def test_delete_generation(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.db.delete_generation(generation.id)
+
+        # post condition
+        self.assertTrue(result)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 0)
+
+    def test_delete_generation__invalid_id(self):
+        # setup
+        invalid_id = 0000
+        self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.db.delete_pokedex(invalid_id)
+
+        # post condition
+        self.assertFalse(result)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+    def test_delete_dexentry(self):
+        # setup
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        # do it
+        result = self.db.delete_dexentry(dexentry.id)
+
+        # post condition
+        self.assertTrue(result)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 0)
+
+    def test_delete_dexentry__invalid_id(self):
+        # setup
+        invalid_id = 0000
+        self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        # do it
+        result = self.db.delete_dexentry(invalid_id)
+
+        # post condition
+        self.assertFalse(result)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+    def test_delete_pokemon(self):
+        # setup
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.delete_pokemon(pokemon.id)
+
+        # post condition
+        self.assertTrue(result)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
+    def test_delete_pokemon__invalid_id(self):
+        # setup
+        invalid_id = 0000
+        self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.delete_pokemon(invalid_id)
+
+        # post condition
+        self.assertFalse(result)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+    def test__delete(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._delete(model=Pokedex, _id=pokedex.id)
+
+        # post condition
+        self.assertTrue(result)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+    def test__delete__invalid_id(self):
+        # setup
+        invalid_id = 0000
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._delete(model=Pokedex, _id=invalid_id)
+
+        # post condition
+        self.assertFalse(result)
+
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
