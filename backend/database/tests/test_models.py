@@ -9,7 +9,7 @@ class TestDatabaseModels(DatabaseTestCase):
     dexentry: DexEntry
     pokemon: Pokemon
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.pokedex = self.create_obj(
             model=Pokedex,

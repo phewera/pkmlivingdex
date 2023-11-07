@@ -37,6 +37,7 @@ class TPokemonData(TypedDict):
     shiny_caught: bool
     lgplge: bool
     swsh: bool
+    arceus: bool
     bdsp: bool
     sv: bool
     dexentry_id: int
@@ -125,11 +126,12 @@ class Pokemon(Base):
     form = mapped_column(Integer)
     sprite = mapped_column(String)
     # Catch status
-    caught = mapped_column(Boolean)
-    shiny_caught = mapped_column(Boolean)
+    caught = mapped_column(Boolean, default=False)
+    shiny_caught = mapped_column(Boolean, default=False)
     # Catch information
     lgplge = mapped_column(Boolean)
     swsh = mapped_column(Boolean)
+    arceus = mapped_column(Boolean)
     bdsp = mapped_column(Boolean)
     sv = mapped_column(Boolean)
     # parent

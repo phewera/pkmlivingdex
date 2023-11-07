@@ -8,3 +8,4 @@ backend/var/*.pid
 backend/var/*.pid-lock
 backend/var/log/*.log
 backend/var/import/*
+!backend/var/import/dex-data.csv

@@ -29,6 +29,7 @@ POKEMON_DATA: TPokemonData = {
     'lgplge': True,
     'swsh': True,
     'bdsp': True,
+    'arceus': True,
     'sv': False,
     'dexentry_id': 1
 }
