@@ -1172,3 +1172,259 @@ class TestDatabaseManager(DatabaseTestCase):
 
         pokedexes = self.db.session.query(Pokedex).all()
         self.assertEqual(len(pokedexes), 1)
+
+    def test_get_pokedex(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db.get_pokdex(pokedex.id)
+
+        # post condition
+        self.assertEqual(result, pokedex)
+
+    def test_get_pokedex__no_result(self):
+        # setup
+        unknown_id = 0000
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db.get_pokdex(unknown_id)
+
+        # post condition
+        self.assertIsNone(result)
+
+    def test_get_pokedexes(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db.get_pokdexes()
+
+        # post condition
+        self.assertEqual(len(pokedexes), len(result))
+        self.assertEqual(result[0], pokedex)
+
+    def test_get_pokedexes__no_results(self):
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 0)
+
+        # do it
+        result = self.db.get_pokdexes()
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_generation(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.db.get_generation(generation.id)
+
+        # post condition
+        self.assertEqual(result, generation)
+
+    def test_get_generation__no_result(self):
+        # setup
+        unknown_id = 0000
+        self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.db.get_generation(unknown_id)
+
+        # post condition
+        self.assertIsNone(result)
+
+    def test_get_generations(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.db.get_generations()
+
+        # post condition
+        self.assertEqual(len(generations), len(result))
+        self.assertEqual(result[0], generation)
+
+    def test_get_generations__no_results(self):
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 0)
+
+        # do it
+        result = self.db.get_generations()
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_dexentry(self):
+        # setup
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        # do it
+        result = self.db.get_dexentry(dexentry.id)
+
+        # post condition
+        self.assertEqual(result, dexentry)
+
+    def test_get_dexentry__no_result(self):
+        # setup
+        unknown_id = 0000
+        self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        # do it
+        result = self.db.get_dexentry(unknown_id)
+
+        # post condition
+        self.assertIsNone(result)
+
+    def test_get_dexentries(self):
+        # setup
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        # do it
+        result = self.db.get_dexentries()
+
+        # post condition
+        self.assertEqual(len(dexentries), len(result))
+        self.assertEqual(result[0], dexentry)
+
+    def test_get_dexentries__no_results(self):
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 0)
+
+        # do it
+        result = self.db.get_dexentries()
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_pokemon(self):
+        # setup
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.get_pokemon(pokemon.id)
+
+        # post condition
+        self.assertEqual(result, pokemon)
+
+    def test_get_pokemon__no_result(self):
+        # setup
+        unknown_id = 0000
+        self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.get_pokemon(unknown_id)
+
+        # post condition
+        self.assertIsNone(result)
+
+    def test_get_pokemons(self):
+        # setup
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        # do it
+        result = self.db.get_pokemons()
+
+        # post condition
+        self.assertEqual(len(pokemons), len(result))
+        self.assertEqual(result[0], pokemon)
+
+    def test_get_pokemons__no_results(self):
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
+        # do it
+        result = self.db.get_pokemons()
+
+        # post condition
+        self.assertEqual(len(result), 0)

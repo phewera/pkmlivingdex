@@ -108,8 +108,14 @@ class DatabaseManager:
     def update_pokedex(self, _id: int, data: Dict[str, Any]) -> bool:
         return self._update(model=Pokedex, _id=_id, data=data)
 
-    def delete_pokedex(self, _id) -> bool:
+    def delete_pokedex(self, _id: int) -> bool:
         return self._delete(model=Pokedex, _id=_id)
+
+    def get_pokdex(self, _id: int) -> Optional[Pokedex]:
+        return self._get(model=Pokedex, _id=_id)
+
+    def get_pokdexes(self) -> List[Optional[Pokedex]]:
+        return self._get_all(model=Pokedex)
 
     # Generation
 
@@ -121,8 +127,14 @@ class DatabaseManager:
     def update_generation(self, _id: int, data: Dict[str, Any]) -> bool:
         return self._update(model=Generation, _id=_id, data=data)
 
-    def delete_generation(self, _id) -> bool:
+    def delete_generation(self, _id: int) -> bool:
         return self._delete(model=Generation, _id=_id)
+
+    def get_generation(self, _id: int) -> Optional[Generation]:
+        return self._get(model=Generation, _id=_id)
+
+    def get_generations(self) -> List[Optional[Generation]]:
+        return self._get_all(model=Generation)
 
     # DexEntry
 
@@ -134,8 +146,14 @@ class DatabaseManager:
     def update_dexentry(self, _id: int, data: Dict[str, Any]) -> bool:
         return self._update(model=DexEntry, _id=_id, data=data)
 
-    def delete_dexentry(self, _id) -> bool:
+    def delete_dexentry(self, _id: int) -> bool:
         return self._delete(model=DexEntry, _id=_id)
+
+    def get_dexentry(self, _id: int) -> Optional[DexEntry]:
+        return self._get(model=DexEntry, _id=_id)
+
+    def get_dexentries(self) -> List[Optional[DexEntry]]:
+        return self._get_all(model=DexEntry)
 
     # Pokemon
 
@@ -147,5 +165,11 @@ class DatabaseManager:
     def update_pokemon(self, _id: int, data: Dict[str, Any]) -> bool:
         return self._update(model=Pokemon, _id=_id, data=data)
 
-    def delete_pokemon(self, _id) -> bool:
+    def delete_pokemon(self, _id: int) -> bool:
         return self._delete(model=Pokemon, _id=_id)
+
+    def get_pokemon(self, _id: int) -> Optional[Pokemon]:
+        return self._get(model=Pokemon, _id=_id)
+
+    def get_pokemons(self) -> List[Optional[Pokemon]]:
+        return self._get_all(model=Pokemon)
