@@ -1,6 +1,6 @@
 number,name,form,sprite,generation,lgplge,swsh,arceus,bdsp,sv
 1,Bisasam,1,0001_1.png,1,TRUE,TRUE,FALSE,TRUE,FALSE
-2,Bisaknosp,1,0002_1.png,1,TRUE,TRUE,FALSE,TRUE,FALSE
+two,Bisaknosp,1,0002_1.png,1,TRUE,TRUE,FALSE,TRUE,FALSE
 3,Bisaflor,1,0003_1.png,1,TRUE,TRUE,FALSE,TRUE,FALSE
 4,Glumanda,1,0004_1.png,1,TRUE,TRUE,FALSE,TRUE,TRUE
 5,Glutexo,1,0005_1.png,1,TRUE,TRUE,FALSE,TRUE,TRUE

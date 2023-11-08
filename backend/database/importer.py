@@ -1,9 +1,24 @@
 from os import path
-from database import logger
-from typing import Optional
+from typing import Optional, TypedDict, List
 
+import pandas as pd
+
+from database import logger
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
+
+
+class TCSVData(TypedDict):
+    number: int
+    name: str
+    form: int
+    sprite: str
+    generation: int
+    lgplge: bool
+    swsh: bool
+    arceus: bool
+    bdsp: bool
+    sv: bool
 
 
 class Importer:
@@ -43,11 +58,17 @@ class Importer:
 
         return True
 
-    def _load_csv(self):
-        pass
+    def _parse_csv(self) -> Optional[List[TCSVData]]:
+        if not self._validate_file():
+            return None
 
-    def _process_data(self):
-        pass
+        try:
+            dataframe = pd.read_csv(self.file, dtype=TCSVData.__annotations__)
+        except ValueError as err:
+            logger.error(f'Could not parse "{self.file_name}": {err.args[0]}')
+            return None
+
+        return dataframe.to_dict(orient='records')
 
     def _check_if_data_already_exists(self):
         pass

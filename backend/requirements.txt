@@ -2,3 +2,4 @@ supervisor==4.2.5
 fastapi==0.104.0
 SQLAlchemy==2.0.22
 uvicorn==0.23.2
+pandas==2.1.2
