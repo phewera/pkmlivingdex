@@ -28,6 +28,9 @@ class Importer:
     file_path: str
     file: str
 
+    updated: int
+    imported: int
+
     def __init__(self, file_name: Optional[str] = None, file_path: Optional[str] = None) -> None:
         if file_name:
             self.file_name = file_name
@@ -49,7 +52,8 @@ class Importer:
             logger.error(f'Can not import data. Pokedex with id "{pokedex_id}" does not exist.')
             return
 
-        imported = 0
+        self.updated = 0
+        self.imported = 0
         for dataset in data:
             if self._check_missing_values(dataset):
                 logger.warn(f'Can not create db entry because of missing values: {dataset}')
@@ -82,53 +86,60 @@ class Importer:
             if not pokemon:
                 continue
 
-            imported += 1
+        logger.info(f'Import done: {self.imported} Objects imported and {self.updated} Objects updated.')
 
-        logger.info(f'Import done. Successfully imported {imported} from {len(data)} datasets.')
+    def _handle_generation(self, db: DatabaseManager, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
+        data = {
+            'number': dataset['generation'],
+            'sprite': f'gen_{dataset["generation"]}.png',
+            'pokedex_id': pokedex_id
+        }
 
-    @staticmethod
-    def _handle_generation(db: DatabaseManager, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
         generations = db.get_generations_by_filter({
             'pokedex_id': pokedex_id,
             'generation': dataset['generation']
         })
 
         if len(generations) > 0:
-            return generations[0]
+            generation = generations[0]
+            updated = generation.update(data)
+            if updated:
+                self.updated += 1
 
-        return db.create_generation({
-            'number': dataset['generation'],
-            'sprite': f'gen_{dataset["generation"]}.png',
-            'pokedex_id': pokedex_id
-        })
+        else:
+            generation = db.create_generation(data)
+            if generation:
+                self.imported += 1
 
-    @staticmethod
-    def _handle_dexentry(db: DatabaseManager, generation_id: int, dataset: TCSVData) -> Optional[DexEntry]:
+        return generation
+
+    def _handle_dexentry(self, db: DatabaseManager, generation_id: int, dataset: TCSVData) -> Optional[DexEntry]:
+        data = {
+            'generation_id': generation_id,
+            'number': dataset['number'],
+            'name': dataset['name'],
+        }
+
         dexentries = db.get_dexentries_by_filter({
             'generation_id': generation_id,
             'number': dataset['number']
         })
 
         if len(dexentries) > 0:
-            return dexentries[0]
+            dexentry = dexentries[0]
+            updated = dexentry.update(data)
+            if updated:
+                self.updated += 1
 
-        return db.create_dexentry({
-            'generation_id': generation_id,
-            'number': dataset['number'],
-            'name': dataset['name'],
-        })
+        else:
+            dexentry = db.create_dexentry(data)
+            if dexentry:
+                self.imported += 1
 
-    @staticmethod
-    def _handle_pokemon(db: DatabaseManager, dexentry_id: int, dataset: TCSVData) -> Optional[Pokemon]:
-        pokemons = db.get_pokemons_by_filter({
-            'dexentry_id': dexentry_id,
-            'form': dataset['form']
-        })
+        return dexentry
 
-        if len(pokemons) > 0:
-            return pokemons[0]
-
-        return db.create_pokemon({
+    def _handle_pokemon(self, db: DatabaseManager, dexentry_id: int, dataset: TCSVData) -> Optional[Pokemon]:
+        data = {
             'dexentry_id': dexentry_id,
             'form': dataset['form'],
             'sprite': dataset['sprite'],
@@ -137,7 +148,25 @@ class Importer:
             'arceus': dataset['arceus'],
             'bdsp': dataset['bdsp'],
             'sv': dataset['sv'],
+        }
+
+        pokemons = db.get_pokemons_by_filter({
+            'dexentry_id': dexentry_id,
+            'form': dataset['form']
         })
+
+        if len(pokemons) > 0:
+            pokemon = pokemons[0]
+            updated = pokemon.update(data)
+            if updated:
+                self.updated += 1
+
+        else:
+            pokemon = db.create_pokemon(data)
+            if pokemon:
+                self.imported += 1
+
+        return pokemon
 
     @staticmethod
     def _get_default_file_path() -> str:
