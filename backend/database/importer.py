@@ -1,9 +1,11 @@
 from os import path
-from typing import Optional, TypedDict, List
+from typing import Optional, TypedDict, List, NoReturn
 
 import pandas as pd
 
 from database import logger
+from database.manager import DatabaseManager
+from database.models import Generation, DexEntry, Pokemon
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
 
@@ -37,8 +39,105 @@ class Importer:
 
         self.file = self._get_file()
 
-    def import_data(self):
-        pass
+    def run_import(self, pokedex_id: int) -> NoReturn:
+        data = self._parse_csv()
+        if not data:
+            return
+
+        db = DatabaseManager()
+        if not db.get_pokdex(pokedex_id):
+            logger.error(f'Can not import data. Pokedex with id "{pokedex_id}" does not exist.')
+            return
+
+        imported = 0
+        for dataset in data:
+            if self._check_missing_values(dataset):
+                logger.warn(f'Can not create db entry because of missing values: {dataset}')
+                continue
+
+            # Generation
+            generation = self._handle_generation(
+                db=db,
+                pokedex_id=pokedex_id,
+                dataset=dataset
+            )
+            if not generation:
+                continue
+
+            # DexEntry
+            dexentry = self._handle_dexentry(
+                db=db,
+                generation_id=generation.id,
+                dataset=dataset
+            )
+            if not dexentry:
+                continue
+
+            # Pokemon
+            pokemon = self._handle_pokemon(
+                db=db,
+                dexentry_id=dexentry.id,
+                dataset=dataset
+            )
+            if not pokemon:
+                continue
+
+            imported += 1
+
+        logger.info(f'Import done. Successfully imported {imported} from {len(data)} datasets.')
+
+    @staticmethod
+    def _handle_generation(db: DatabaseManager, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
+        generations = db.get_generations_by_filter({
+            'pokedex_id': pokedex_id,
+            'generation': dataset['generation']
+        })
+
+        if len(generations) > 0:
+            return generations[0]
+
+        return db.create_generation({
+            'number': dataset['generation'],
+            'sprite': f'gen_{dataset["generation"]}.png',
+            'pokedex_id': pokedex_id
+        })
+
+    @staticmethod
+    def _handle_dexentry(db: DatabaseManager, generation_id: int, dataset: TCSVData) -> Optional[DexEntry]:
+        dexentries = db.get_dexentries_by_filter({
+            'generation_id': generation_id,
+            'number': dataset['number']
+        })
+
+        if len(dexentries) > 0:
+            return dexentries[0]
+
+        return db.create_dexentry({
+            'generation_id': generation_id,
+            'number': dataset['number'],
+            'name': dataset['name'],
+        })
+
+    @staticmethod
+    def _handle_pokemon(db: DatabaseManager, dexentry_id: int, dataset: TCSVData) -> Optional[Pokemon]:
+        pokemons = db.get_pokemons_by_filter({
+            'dexentry_id': dexentry_id,
+            'form': dataset['form']
+        })
+
+        if len(pokemons) > 0:
+            return pokemons[0]
+
+        return db.create_pokemon({
+            'dexentry_id': dexentry_id,
+            'form': dataset['form'],
+            'sprite': dataset['sprite'],
+            'lgplge': dataset['lgplge'],
+            'swsh': dataset['swsh'],
+            'arceus': dataset['arceus'],
+            'bdsp': dataset['bdsp'],
+            'sv': dataset['sv'],
+        })
 
     @staticmethod
     def _get_default_file_path() -> str:
@@ -74,5 +173,6 @@ class Importer:
 
         return dataframe.to_dict(orient='records')
 
-    def _check_if_data_already_exists(self):
-        pass
+    @staticmethod
+    def _check_missing_values(dataset: TCSVData) -> bool:
+        return 'NA' in dataset.values()

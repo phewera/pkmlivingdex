@@ -33,8 +33,8 @@ class TPokemonData(TypedDict):
     id: NotRequired[int]
     form: int
     sprite: str
-    caught: bool
-    shiny_caught: bool
+    caught: NotRequired[bool]
+    shiny_caught: NotRequired[bool]
     lgplge: bool
     swsh: bool
     arceus: bool

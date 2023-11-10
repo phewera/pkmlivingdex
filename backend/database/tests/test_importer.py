@@ -1,7 +1,8 @@
 from os import path
 
 from database.importer import Importer, TCSVData, WORKING_DIR as IMPORTER_WORKING_DIR
-from database.tests.base import DatabaseTestCase
+from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA, POKEMON_DATA
+from database.models import Pokedex, Generation, DexEntry, Pokemon
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
 
@@ -21,6 +22,7 @@ class TestDatabaseManager(DatabaseTestCase):
         )
 
     def tearDown(self) -> None:
+        super().tearDown()
         del self.importer
 
     def test__init__(self):
@@ -176,3 +178,58 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # post condition
         self.assertIsNone(result)
+
+    def test__check_missing_values(self):
+        # setup
+        dataset = {
+            'number': 1,
+            'name': 'Bulbasaur',
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'generation': 1,
+            'lgplge': True,
+            'swsh': False,
+            'arceus': True,
+            'bdsp': False,
+            'sv': True
+        }
+
+        # do it
+        result = self.importer._check_missing_values(dataset)
+
+        # post condition
+        self.assertFalse(result)
+
+    def test__check_missing_values__na_value(self):
+        # setup
+        dataset = {
+            'number': 1,
+            'name': 'Bulbasaur',
+            'form': 1,
+            'sprite': 'bulbasaur_1.png',
+            'generation': 'NA',
+            'lgplge': True,
+            'swsh': False,
+            'arceus': True,
+            'bdsp': False,
+            'sv': True
+        }
+
+        # do it
+        # noinspection PyTypeChecker
+        result = self.importer._check_missing_values(dataset)
+
+        # post condition
+        self.assertTrue(result)
+
+    def test__handle_generation(self):
+        self.skipTest('TODO')
+
+    def test__handle_dexentry(self):
+        self.skipTest('TODO')
+
+    def test__handle_pokemon(self):
+        self.skipTest('TODO')
+
+    def test_run_import(self):
+        self.skipTest('TODO')
