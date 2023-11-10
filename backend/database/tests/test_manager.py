@@ -1274,6 +1274,10 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test_get_generations(self):
         # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
         generation = self.create_obj(
             model=Generation,
             data=GENERATION_DATA
@@ -1282,6 +1286,8 @@ class TestDatabaseManager(DatabaseTestCase):
         # pre condition
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
 
         # do it
         result = self.db.get_generations()
@@ -1425,6 +1431,371 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # do it
         result = self.db.get_pokemons()
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test__get_by_filter(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        filters = {
+            'title': 'test-pokedex'
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        # do it
+        result = self.db._get_by_filter(model=Pokedex, filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], pokedex)
+
+    def test__get_by_filter__no_results(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        filters = {
+            'title': 'unknown-title'
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        self.assertNotEqual(filters['title'], pokedex.title)
+
+        # do it
+        result = self.db._get_by_filter(model=Pokedex, filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test__get_by_filter__multiple_results(self):
+        # setup
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation_1 = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        generation_2_data = deepcopy(GENERATION_DATA)
+        generation_2_data['number'] = 2
+        generation_2 = self.create_obj(
+            model=Generation,
+            data=generation_2_data
+        )
+
+        filters = {
+            'sprite': 'gen_1.png'
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 2)
+
+        # do it
+        result = self.db._get_by_filter(model=Generation, filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], generation_1)
+        self.assertEqual(result[1], generation_2)
+
+    def test__get_by_filter__multiple_filter_values(self):
+        # setup
+        self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation_1 = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        generation_2_data = deepcopy(GENERATION_DATA)
+        generation_2_data['number'] = 2
+        generation_2 = self.create_obj(
+            model=Generation,
+            data=generation_2_data
+        )
+
+        filters = {
+            'sprite': 'gen_1.png',
+            'id': generation_1.id
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 2)
+
+        # do it
+        result = self.db._get_by_filter(model=Generation, filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], generation_1)
+
+    def test_get_pokdexes_by_filter(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        filters = {
+            'title': pokedex.title
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        self.assertEqual(filters['title'], pokedex.title)
+
+        # do it
+        result = self.db.get_pokdexes_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], pokedex)
+
+    def test_get_pokdexes_by_filter__no_result(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
+        filters = {
+            'title': 'unknown-title'
+        }
+
+        # pre condition
+        pokedexes = self.db.session.query(Pokedex).all()
+        self.assertEqual(len(pokedexes), 1)
+
+        self.assertNotEqual(filters['title'], pokedex.title)
+
+        # do it
+        result = self.db.get_pokdexes_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_generations_by_filter(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        filters = {
+            'number': 1
+        }
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertEqual(generation.number, filters['number'])
+
+        # do it
+        result = self.db.get_generations_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], generation)
+
+    def test_get_generations_by_filter__no_results(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        filters = {
+            'number': 10000
+        }
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertNotEqual(generation.number, filters['number'])
+
+        # do it
+        result = self.db.get_generations_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_dexentries_by_filter(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        filters = {
+            'name': 'Bulbasaur'
+        }
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertEqual(generation, dexentry.generation)
+        self.assertEqual(filters['name'], dexentry.name)
+
+        # do it
+        result = self.db.get_dexentries_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], dexentry)
+
+    def test_get_dexentries_by_filter__no_results(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        filters = {
+            'name': 'unknown-name'
+        }
+
+        # pre condition
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertEqual(generation, dexentry.generation)
+        self.assertNotEqual(filters['name'], dexentry.name)
+
+        # do it
+        result = self.db.get_dexentries_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 0)
+
+    def test_get_pokemons_by_filter(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        filters = {
+            'sprite': 'bulbasaur_1.png'
+        }
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertEqual(generation, dexentry.generation)
+        self.assertEqual(dexentry, pokemon.dexentry)
+        self.assertEqual(filters['sprite'], pokemon.sprite)
+
+        # do it
+        result = self.db.get_pokemons_by_filter(filters=filters)
+
+        # post condition
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], pokemon)
+
+    def test_get_pokemons_by_filter__no_results(self):
+        # setup
+        pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        filters = {
+            'sprite': 'unknown-sprite.png'
+        }
+
+        # pre condition
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        self.assertEqual(pokedex, generation.pokedex)
+        self.assertEqual(generation, dexentry.generation)
+        self.assertEqual(dexentry, pokemon.dexentry)
+        self.assertNotEqual(filters['sprite'], pokemon.sprite)
+
+        # do it
+        result = self.db.get_pokemons_by_filter(filters=filters)
 
         # post condition
         self.assertEqual(len(result), 0)

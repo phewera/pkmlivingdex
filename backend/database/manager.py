@@ -78,7 +78,7 @@ class DatabaseManager:
         self.session.commit()
         return True
 
-    def _get(self, model: Type[Base], _id: int) -> Union[Optional[ModelInstance]]:
+    def _get(self, model: Type[Base], _id: int) -> Optional[ModelInstance]:
         return self.session.query(model).filter_by(id=_id).first() or None
 
     def _get_all(self, model: Type[Base]) -> List[Optional[ModelInstance]]:
@@ -89,6 +89,13 @@ class DatabaseManager:
             logger.error(f'Referenced "{model.__name__}" (ID: {_id}) object could not be found.')
             return False
         return True
+
+    def _get_by_filter(self, model: Type[Base], filters: Dict[str, any]) -> List[Optional[ModelInstance]]:
+        query = self.session.query(model)
+        for attr, value in filters.items():
+            # noinspection PyTypeChecker
+            query = query.filter(getattr(model, attr) == value)
+        return query.all() or list()
 
     def _format_data(self, data: Dict[str, Any], model: DeclarativeBase):
         pass
@@ -117,6 +124,9 @@ class DatabaseManager:
     def get_pokdexes(self) -> List[Optional[Pokedex]]:
         return self._get_all(model=Pokedex)
 
+    def get_pokdexes_by_filter(self, filters: Dict[str, any]) -> List[Optional[Pokedex]]:
+        return self._get_by_filter(model=Pokedex, filters=filters)
+
     # Generation
 
     def create_generation(self, data: TGenerationData) -> Optional[Generation]:
@@ -135,6 +145,9 @@ class DatabaseManager:
 
     def get_generations(self) -> List[Optional[Generation]]:
         return self._get_all(model=Generation)
+
+    def get_generations_by_filter(self, filters: Dict[str, any]) -> List[Optional[Generation]]:
+        return self._get_by_filter(model=Generation, filters=filters)
 
     # DexEntry
 
@@ -155,6 +168,9 @@ class DatabaseManager:
     def get_dexentries(self) -> List[Optional[DexEntry]]:
         return self._get_all(model=DexEntry)
 
+    def get_dexentries_by_filter(self, filters: Dict[str, any]) -> List[Optional[DexEntry]]:
+        return self._get_by_filter(model=DexEntry, filters=filters)
+
     # Pokemon
 
     def create_pokemon(self, data: TPokemonData) -> Optional[Pokemon]:
@@ -173,3 +189,6 @@ class DatabaseManager:
 
     def get_pokemons(self) -> List[Optional[Pokemon]]:
         return self._get_all(model=Pokemon)
+
+    def get_pokemons_by_filter(self, filters: Dict[str, any]) -> List[Optional[Pokemon]]:
+        return self._get_by_filter(model=Pokemon, filters=filters)
