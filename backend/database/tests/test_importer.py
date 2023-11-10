@@ -159,3 +159,20 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # post condition
         self.assertIsNone(result)
+
+    def test__parse_csv__missing_columns(self):
+        # setup
+        file_name = 'test-dex-data_missing_columns.csv'
+        self.importer.__init__(
+            file_path=self.file_path,
+            file_name=file_name
+        )
+
+        # pre condition
+        self.assertTrue(path.isfile(self.importer.file))
+
+        # do it
+        result = self.importer._parse_csv()
+
+        # post condition
+        self.assertIsNone(result)

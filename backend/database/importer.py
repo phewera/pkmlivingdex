@@ -63,7 +63,11 @@ class Importer:
             return None
 
         try:
-            dataframe = pd.read_csv(self.file, dtype=TCSVData.__annotations__)
+            dataframe = pd.read_csv(
+                filepath_or_buffer=self.file,
+                dtype=TCSVData.__annotations__,
+                usecols=list(TCSVData.__annotations__.keys())
+            )
         except ValueError as err:
             logger.error(f'Could not parse "{self.file_name}": {err.args[0]}')
             return None
