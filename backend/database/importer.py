@@ -4,7 +4,7 @@ from typing import Optional, TypedDict, List, NoReturn
 import pandas as pd
 
 from database import logger
-from database.manager import DatabaseManager
+from database.manager import DatabaseManager, TAvailableEnvironments
 from database.models import Generation, DexEntry, Pokemon
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
@@ -27,11 +27,17 @@ class Importer:
     file_name: str = 'dex-data.csv'
     file_path: str
     file: str
+    db: DatabaseManager
 
     updated: int
     imported: int
 
-    def __init__(self, file_name: Optional[str] = None, file_path: Optional[str] = None) -> None:
+    def __init__(
+            self,
+            file_name: Optional[str] = None,
+            file_path: Optional[str] = None,
+            env: TAvailableEnvironments = 'production'
+    ) -> None:
         if file_name:
             self.file_name = file_name
 
@@ -40,6 +46,7 @@ class Importer:
         else:
             self.file_path = self._get_default_file_path()
 
+        self.db = DatabaseManager(env)
         self.file = self._get_file()
 
     def run_import(self, pokedex_id: int) -> NoReturn:
@@ -47,8 +54,7 @@ class Importer:
         if not data:
             return
 
-        db = DatabaseManager()
-        if not db.get_pokdex(pokedex_id):
+        if not self.db.get_pokdex(pokedex_id):
             logger.error(f'Can not import data. Pokedex with id "{pokedex_id}" does not exist.')
             return
 
@@ -61,7 +67,6 @@ class Importer:
 
             # Generation
             generation = self._handle_generation(
-                db=db,
                 pokedex_id=pokedex_id,
                 dataset=dataset
             )
@@ -70,7 +75,6 @@ class Importer:
 
             # DexEntry
             dexentry = self._handle_dexentry(
-                db=db,
                 generation_id=generation.id,
                 dataset=dataset
             )
@@ -79,7 +83,6 @@ class Importer:
 
             # Pokemon
             pokemon = self._handle_pokemon(
-                db=db,
                 dexentry_id=dexentry.id,
                 dataset=dataset
             )
@@ -88,16 +91,16 @@ class Importer:
 
         logger.info(f'Import done: {self.imported} Objects imported and {self.updated} Objects updated.')
 
-    def _handle_generation(self, db: DatabaseManager, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
+    def _handle_generation(self, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
         data = {
             'number': dataset['generation'],
             'sprite': f'gen_{dataset["generation"]}.png',
             'pokedex_id': pokedex_id
         }
 
-        generations = db.get_generations_by_filter({
+        generations = self.db.get_generations_by_filter({
             'pokedex_id': pokedex_id,
-            'generation': dataset['generation']
+            'number': dataset['generation']
         })
 
         if len(generations) > 0:
@@ -107,20 +110,20 @@ class Importer:
                 self.updated += 1
 
         else:
-            generation = db.create_generation(data)
+            generation = self.db.create_generation(data)
             if generation:
                 self.imported += 1
 
         return generation
 
-    def _handle_dexentry(self, db: DatabaseManager, generation_id: int, dataset: TCSVData) -> Optional[DexEntry]:
+    def _handle_dexentry(self, generation_id: int, dataset: TCSVData) -> Optional[DexEntry]:
         data = {
             'generation_id': generation_id,
             'number': dataset['number'],
             'name': dataset['name'],
         }
 
-        dexentries = db.get_dexentries_by_filter({
+        dexentries = self.db.get_dexentries_by_filter({
             'generation_id': generation_id,
             'number': dataset['number']
         })
@@ -132,13 +135,13 @@ class Importer:
                 self.updated += 1
 
         else:
-            dexentry = db.create_dexentry(data)
+            dexentry = self.db.create_dexentry(data)
             if dexentry:
                 self.imported += 1
 
         return dexentry
 
-    def _handle_pokemon(self, db: DatabaseManager, dexentry_id: int, dataset: TCSVData) -> Optional[Pokemon]:
+    def _handle_pokemon(self, dexentry_id: int, dataset: TCSVData) -> Optional[Pokemon]:
         data = {
             'dexentry_id': dexentry_id,
             'form': dataset['form'],
@@ -150,7 +153,7 @@ class Importer:
             'sv': dataset['sv'],
         }
 
-        pokemons = db.get_pokemons_by_filter({
+        pokemons = self.db.get_pokemons_by_filter({
             'dexentry_id': dexentry_id,
             'form': dataset['form']
         })
@@ -162,7 +165,7 @@ class Importer:
                 self.updated += 1
 
         else:
-            pokemon = db.create_pokemon(data)
+            pokemon = self.db.create_pokemon(data)
             if pokemon:
                 self.imported += 1
 

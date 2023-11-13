@@ -10,15 +10,22 @@ WORKING_DIR = path.dirname(path.abspath(__file__))
 class TestDatabaseManager(DatabaseTestCase):
     file_name: str = 'test-dex-data.csv'
     file_path: str = path.join(WORKING_DIR, 'data')
+    pokedex: Pokedex
     importer: Importer
 
     def setUp(self) -> None:
         super().setUp()
 
+        self.pokedex = self.create_obj(
+            model=Pokedex,
+            data=POKEDEX_DATA
+        )
+
         # setup importer with test data
         self.importer = Importer(
             file_name=self.file_name,
-            file_path=self.file_path
+            file_path=self.file_path,
+            env='testing'
         )
 
     def tearDown(self) -> None:
@@ -232,4 +239,53 @@ class TestDatabaseManager(DatabaseTestCase):
         self.skipTest('TODO')
 
     def test_run_import(self):
+        # do it
+        self.importer.run_import(pokedex_id=self.pokedex.id)
+
+        # post condition
+        self.assertEqual(self.importer.imported, 39)
+        self.assertEqual(self.importer.updated, 0)
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 2)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 18)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 19)
+
+    def test_run_import__imported_data(self):
+        # do it
+        self.importer.run_import(pokedex_id=self.pokedex.id)
+
+        # post condition
+        generations = self.db.session.query(Generation).all()
+        generation = generations[0]
+        self.assertEqual(generation.pokedex_id, self.pokedex.id)
+        self.assertEqual(generation.number, 1)
+        self.assertEqual(generation.sprite, 'gen_1.png')
+
+        dexentries = self.db.session.query(DexEntry).all()
+        dexentry = dexentries[0]
+        self.assertEqual(dexentry.generation_id, generation.id)
+        self.assertEqual(dexentry.number, 1)
+        self.assertEqual(dexentry.name, 'Bisasam')
+
+        pokemons = self.db.session.query(Pokemon).all()
+        pokemon = pokemons[0]
+        self.assertEqual(pokemon.dexentry_id, dexentry.id)
+        self.assertEqual(pokemon.sprite, '0001_1.png')
+        self.assertEqual(pokemon.form, 1)
+        self.assertTrue(pokemon.lgplge)
+        self.assertTrue(pokemon.swsh)
+        self.assertFalse(pokemon.arceus)
+        self.assertFalse(pokemon.sv)
+        self.assertFalse(pokemon.caught)
+        self.assertFalse(pokemon.shiny_caught)
+
+    def test_run_import__update_data(self):
+        self.skipTest('TODO')
+
+    def test_run_import__no_changes(self):
         self.skipTest('TODO')
