@@ -186,6 +186,23 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         self.assertIsNone(result)
 
+    def test__parse_csv__missing_values(self):
+        # setup
+        file_name = 'test-dex-data_missing_values.csv'
+        self.importer.__init__(
+            file_path=self.file_path,
+            file_name=file_name
+        )
+
+        # pre condition
+        self.assertTrue(path.isfile(self.importer.file))
+
+        # do it
+        result = self.importer._parse_csv()
+
+        # post condition
+        self.assertIsNone(result)
+
     def test__check_missing_values(self):
         # setup
         dataset = {
@@ -229,8 +246,78 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         self.assertTrue(result)
 
-    def test__handle_generation(self):
-        self.skipTest('TODO')
+    def test__handle_generation__does_not_exist(self):
+        csv_data = {
+            'number': 1,
+            'name': 'Bisasam',
+            'form': 1,
+            'sprite': '0001_1.png',
+            'generation': GENERATION_DATA['number'],
+            'lgplge': True,
+            'swsh': True,
+            'arceus': False,
+            'bdsp': True,
+            'sv': False
+        }
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 0)
+
+        # do it
+        result = self.importer._handle_generation(
+            pokedex_id=self.pokedex.id,
+            dataset=csv_data
+        )
+
+        # post condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        self.assertIsInstance(result, Generation)
+        self.assertEqual(result.number, csv_data['generation'])
+        self.assertEqual(result.sprite, f'gen_{csv_data["generation"]}.png')
+        self.assertEqual(result.pokedex_id, self.pokedex.id)
+
+    def test__handle_generation__already_exist(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+
+        csv_data = {
+            'number': 1,
+            'name': 'Bisasam',
+            'form': 1,
+            'sprite': '0001_1.png',
+            'generation': 1,
+            'lgplge': True,
+            'swsh': True,
+            'arceus': False,
+            'bdsp': True,
+            'sv': False
+        }
+
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        # do it
+        result = self.importer._handle_generation(
+            pokedex_id=self.pokedex.id,
+            dataset=csv_data
+        )
+
+        # post condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        self.assertIsInstance(result, Generation)
+        self.assertEqual(result.id, generation.id)
+        self.assertEqual(result.number, generation.number)
+        self.assertEqual(result.sprite, generation.sprite)
+        self.assertEqual(result.pokedex_id, generation.pokedex_id)
 
     def test__handle_dexentry(self):
         self.skipTest('TODO')

@@ -28,9 +28,8 @@ class Importer:
     file_path: str
     file: str
     db: DatabaseManager
-
-    updated: int
-    imported: int
+    updated: int = 0
+    imported: int = 0
 
     def __init__(
             self,
