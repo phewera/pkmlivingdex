@@ -1,11 +1,10 @@
 import os
-from typing import Dict, Any, List, Union, Optional, TypeVar, Type
+from typing import Dict, Any, List, Optional, TypeVar, Type
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 
 from database import logger
 from database.config import TAvailableEnvironments, Environments

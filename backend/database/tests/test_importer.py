@@ -1,8 +1,8 @@
 from os import path
 
 from database.importer import Importer, TCSVData, WORKING_DIR as IMPORTER_WORKING_DIR
-from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA, POKEMON_DATA
 from database.models import Pokedex, Generation, DexEntry, Pokemon
+from database.tests.base import DatabaseTestCase, POKEDEX_DATA, GENERATION_DATA, DEXENTRY_DATA, POKEMON_DATA
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
 
@@ -23,9 +23,9 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # setup importer with test data
         self.importer = Importer(
+            db=self.db,
             file_name=self.file_name,
-            file_path=self.file_path,
-            env='testing'
+            file_path=self.file_path
         )
 
     def tearDown(self) -> None:
@@ -34,7 +34,9 @@ class TestDatabaseManager(DatabaseTestCase):
 
     def test__init__(self):
         # do it
-        importer = Importer()
+        importer = Importer(
+            db=self.db
+        )
 
         # post condition
         file_name = 'dex-data.csv'
@@ -51,6 +53,7 @@ class TestDatabaseManager(DatabaseTestCase):
 
         # do it
         importer = Importer(
+            db=self.db,
             file_name=file_name,
             file_path=file_path
         )
@@ -85,9 +88,9 @@ class TestDatabaseManager(DatabaseTestCase):
     def test__validate_file__invalid_path(self):
         file_path = 'invalid-path'
         self.importer.__init__(
+            db=self.db,
             file_path=file_path,
-            file_name=self.file_name,
-            env='testing'
+            file_name=self.file_name
         )
 
         # setup
@@ -106,9 +109,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data.invalid'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition
@@ -158,9 +161,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data_wrong_data_type.csv'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition
@@ -176,9 +179,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data_missing_columns.csv'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition
@@ -194,9 +197,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data_missing_values.csv'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition
@@ -819,9 +822,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data_wrong_data_type.csv'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition
@@ -850,9 +853,9 @@ class TestDatabaseManager(DatabaseTestCase):
         # setup
         file_name = 'test-dex-data_na_values.csv'
         self.importer.__init__(
+            db=self.db,
             file_path=self.file_path,
-            file_name=file_name,
-            env='testing'
+            file_name=file_name
         )
 
         # pre condition

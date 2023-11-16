@@ -1,10 +1,10 @@
 from os import path
-from typing import Optional, TypedDict, List, NoReturn, Tuple
+from typing import Optional, TypedDict, List, Tuple
 
 import pandas as pd
 
 from database import logger
-from database.manager import DatabaseManager, TAvailableEnvironments
+from database.manager import DatabaseManager
 from database.models import Generation, DexEntry, Pokemon
 
 WORKING_DIR = path.dirname(path.abspath(__file__))
@@ -32,12 +32,7 @@ class Importer:
     imported: int = 0
     skipped: int = 0
 
-    def __init__(
-            self,
-            file_name: Optional[str] = None,
-            file_path: Optional[str] = None,
-            env: TAvailableEnvironments = 'production'
-    ) -> None:
+    def __init__(self, db: DatabaseManager, file_name: Optional[str] = None, file_path: Optional[str] = None) -> None:
         if file_name:
             self.file_name = file_name
 
@@ -46,7 +41,7 @@ class Importer:
         else:
             self.file_path = self._get_default_file_path()
 
-        self.db = DatabaseManager(env)
+        self.db = db
         self.file = self._get_file()
 
     def run_import(self, pokedex_id: int) -> Optional[Tuple[int, int, int]]:
