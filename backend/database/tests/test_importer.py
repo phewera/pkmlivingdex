@@ -246,7 +246,7 @@ class TestDatabaseManager(DatabaseTestCase):
         # post condition
         self.assertTrue(result)
 
-    def test__handle_generation(self):
+    def test__handle_generation__create(self):
         # setup
         csv_data = {
             'number': DEXENTRY_DATA['number'],
@@ -286,7 +286,7 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 1)
         self.assertEqual(self.importer.updated, 0)
 
-    def test__handle_generation__already_exist(self):
+    def test__handle_generation__already_exist__no_changes(self):
         # setup
         generation = self.create_obj(
             model=Generation,
@@ -332,7 +332,7 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 0)
         self.assertEqual(self.importer.updated, 0)
 
-    def test__handle_dexentry(self):
+    def test__handle_dexentry__create(self):
         # setup
         generation = self.create_obj(
             model=Generation,
@@ -383,7 +383,7 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 1)
         self.assertEqual(self.importer.updated, 0)
 
-    def test__handle_dexentry__already_exist(self):
+    def test__handle_dexentry__already_exist__no_changes(self):
         # setup
         generation = self.create_obj(
             model=Generation,
@@ -438,7 +438,64 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 0)
         self.assertEqual(self.importer.updated, 0)
 
-    def test__handle_pokemon(self):
+    def test__handle_dexentry__already_exist__update_data(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+
+        csv_data = {
+            'number': dexentry.number,
+            'name': f'{dexentry.name}-changed',
+            'form': POKEMON_DATA['form'],
+            'sprite': POKEMON_DATA['sprite'],
+            'generation': generation.number,
+            'lgplge': POKEMON_DATA['lgplge'],
+            'swsh': POKEMON_DATA['swsh'],
+            'arceus': POKEMON_DATA['arceus'],
+            'bdsp': POKEMON_DATA['bdsp'],
+            'sv': POKEMON_DATA['sv']
+        }
+
+        # pre condition
+        self.assertNotEqual(dexentry.name, csv_data['name'])
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertEqual(self.importer.imported, 0)
+        self.assertEqual(self.importer.updated, 0)
+
+        # do it
+        result = self.importer._handle_dexentry(
+            generation_id=generation.id,
+            dataset=csv_data
+        )
+
+        # post condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        self.assertIsInstance(result, DexEntry)
+        self.assertEqual(result.number, dexentry.number)
+        self.assertEqual(result.name, csv_data['name'])
+        self.assertEqual(result.generation_id, dexentry.generation_id)
+
+        self.assertEqual(self.importer.imported, 0)
+        self.assertEqual(self.importer.updated, 1)
+
+    def test__handle_pokemon__create(self):
         # setup
         generation = self.create_obj(
             model=Generation,
@@ -506,7 +563,7 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 1)
         self.assertEqual(self.importer.updated, 0)
 
-    def test__handle_pokemon__already_exist(self):
+    def test__handle_pokemon__already_exist__no_changes(self):
         # setup
         generation = self.create_obj(
             model=Generation,
@@ -578,7 +635,91 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(self.importer.imported, 0)
         self.assertEqual(self.importer.updated, 0)
 
+    def test__handle_pokemon__already_exist__update_data(self):
+        # setup
+        generation = self.create_obj(
+            model=Generation,
+            data=GENERATION_DATA
+        )
+        dexentry = self.create_obj(
+            model=DexEntry,
+            data=DEXENTRY_DATA
+        )
+        pokemon = self.create_obj(
+            model=Pokemon,
+            data=POKEMON_DATA
+        )
+
+        csv_data = {
+            'number': dexentry.number,
+            'name': dexentry.name,
+            'form': pokemon.form,
+            'sprite': pokemon.sprite,
+            'generation': generation.number,
+            'lgplge': False,
+            'swsh': pokemon.swsh,
+            'arceus': pokemon.arceus,
+            'bdsp': pokemon.bdsp,
+            'sv': pokemon.sv
+        }
+
+        # pre condition
+        self.assertNotEqual(pokemon.lgplge, csv_data['lgplge'])
+
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        self.assertEqual(self.importer.imported, 0)
+        self.assertEqual(self.importer.updated, 0)
+
+        # do it
+        result = self.importer._handle_pokemon(
+            dexentry_id=dexentry.id,
+            dataset=csv_data
+        )
+
+        # post condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 1)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 1)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 1)
+
+        self.assertIsInstance(result, Pokemon)
+        self.assertEqual(result.form, pokemon.form)
+        self.assertEqual(result.sprite, pokemon.sprite)
+        self.assertEqual(result.caught, pokemon.caught)
+        self.assertEqual(result.shiny_caught, pokemon.shiny_caught)
+        self.assertEqual(result.lgplge, csv_data['lgplge'])
+        self.assertEqual(result.swsh, pokemon.swsh)
+        self.assertEqual(result.arceus, pokemon.arceus)
+        self.assertEqual(result.bdsp, pokemon.bdsp)
+        self.assertEqual(result.sv, pokemon.sv)
+        self.assertEqual(result.dexentry_id, pokemon.dexentry_id)
+
+        self.assertEqual(self.importer.imported, 0)
+        self.assertEqual(self.importer.updated, 1)
+
     def test_run_import(self):
+        # pre condition
+        generations = self.db.session.query(Generation).all()
+        self.assertEqual(len(generations), 0)
+
+        dexentries = self.db.session.query(DexEntry).all()
+        self.assertEqual(len(dexentries), 0)
+
+        pokemons = self.db.session.query(Pokemon).all()
+        self.assertEqual(len(pokemons), 0)
+
         # do it
         self.importer.run_import(pokedex_id=self.pokedex.id)
 
@@ -623,12 +764,6 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertFalse(pokemon.sv)
         self.assertFalse(pokemon.caught)
         self.assertFalse(pokemon.shiny_caught)
-
-    def test_run_import__update_data(self):
-        self.skipTest('TODO')
-
-    def test_run_import__no_changes(self):
-        self.skipTest('TODO')
 
     def test_run_import___missing_values(self):
         self.skipTest('TODO')

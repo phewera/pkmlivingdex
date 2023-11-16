@@ -104,9 +104,6 @@ class Importer:
 
         if len(generations) > 0:
             generation = generations[0]
-            updated = generation.update(data)
-            if updated:
-                self.updated += 1
 
         else:
             generation = self.db.create_generation(data)
