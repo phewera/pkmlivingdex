@@ -1,5 +1,5 @@
 from os import path
-from typing import Optional, TypedDict, List, NoReturn
+from typing import Optional, TypedDict, List, NoReturn, Tuple
 
 import pandas as pd
 
@@ -30,6 +30,7 @@ class Importer:
     db: DatabaseManager
     updated: int = 0
     imported: int = 0
+    skipped: int = 0
 
     def __init__(
             self,
@@ -48,20 +49,23 @@ class Importer:
         self.db = DatabaseManager(env)
         self.file = self._get_file()
 
-    def run_import(self, pokedex_id: int) -> NoReturn:
+    def run_import(self, pokedex_id: int) -> Optional[Tuple[int, int, int]]:
         data = self._parse_csv()
         if not data:
-            return
+            return None
 
         if not self.db.get_pokdex(pokedex_id):
             logger.error(f'Can not import data. Pokedex with id "{pokedex_id}" does not exist.')
-            return
+            return None
 
+        self.skipped = 0
         self.updated = 0
         self.imported = 0
+
         for dataset in data:
             if self._check_missing_values(dataset):
                 logger.warn(f'Can not create db entry because of missing values: {dataset}')
+                self.skipped += 1
                 continue
 
             # Generation
@@ -89,6 +93,7 @@ class Importer:
                 continue
 
         logger.info(f'Import done: {self.imported} Objects imported and {self.updated} Objects updated.')
+        return self.skipped, self.updated, self.imported
 
     def _handle_generation(self, pokedex_id: int, dataset: TCSVData) -> Optional[Generation]:
         data = {
@@ -203,4 +208,5 @@ class Importer:
 
     @staticmethod
     def _check_missing_values(dataset: TCSVData) -> bool:
-        return 'NA' in dataset.values()
+        na_values = ['NA', 'NAN']
+        return any(str(value).upper() in na_values for value in dataset.values())

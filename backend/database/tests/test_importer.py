@@ -86,7 +86,8 @@ class TestDatabaseManager(DatabaseTestCase):
         file_path = 'invalid-path'
         self.importer.__init__(
             file_path=file_path,
-            file_name=self.file_name
+            file_name=self.file_name,
+            env='testing'
         )
 
         # setup
@@ -106,7 +107,8 @@ class TestDatabaseManager(DatabaseTestCase):
         file_name = 'test-dex-data.invalid'
         self.importer.__init__(
             file_path=self.file_path,
-            file_name=file_name
+            file_name=file_name,
+            env='testing'
         )
 
         # pre condition
@@ -157,7 +159,8 @@ class TestDatabaseManager(DatabaseTestCase):
         file_name = 'test-dex-data_wrong_data_type.csv'
         self.importer.__init__(
             file_path=self.file_path,
-            file_name=file_name
+            file_name=file_name,
+            env='testing'
         )
 
         # pre condition
@@ -174,7 +177,8 @@ class TestDatabaseManager(DatabaseTestCase):
         file_name = 'test-dex-data_missing_columns.csv'
         self.importer.__init__(
             file_path=self.file_path,
-            file_name=file_name
+            file_name=file_name,
+            env='testing'
         )
 
         # pre condition
@@ -191,7 +195,8 @@ class TestDatabaseManager(DatabaseTestCase):
         file_name = 'test-dex-data_missing_values.csv'
         self.importer.__init__(
             file_path=self.file_path,
-            file_name=file_name
+            file_name=file_name,
+            env='testing'
         )
 
         # pre condition
@@ -231,7 +236,51 @@ class TestDatabaseManager(DatabaseTestCase):
             'name': DEXENTRY_DATA['name'],
             'form': POKEMON_DATA['form'],
             'sprite': POKEMON_DATA['sprite'],
-            'generation': 'NA',
+            'generation': 'na',
+            'lgplge': POKEMON_DATA['lgplge'],
+            'swsh': POKEMON_DATA['swsh'],
+            'arceus': POKEMON_DATA['arceus'],
+            'bdsp': POKEMON_DATA['bdsp'],
+            'sv': POKEMON_DATA['sv']
+        }
+
+        # do it
+        # noinspection PyTypeChecker
+        result = self.importer._check_missing_values(dataset)
+
+        # post condition
+        self.assertTrue(result)
+
+    def test__check_missing_values__nan_value(self):
+        # setup
+        dataset = {
+            'number': DEXENTRY_DATA['number'],
+            'name': DEXENTRY_DATA['name'],
+            'form': POKEMON_DATA['form'],
+            'sprite': POKEMON_DATA['sprite'],
+            'generation': 'nan',
+            'lgplge': POKEMON_DATA['lgplge'],
+            'swsh': POKEMON_DATA['swsh'],
+            'arceus': POKEMON_DATA['arceus'],
+            'bdsp': POKEMON_DATA['bdsp'],
+            'sv': POKEMON_DATA['sv']
+        }
+
+        # do it
+        # noinspection PyTypeChecker
+        result = self.importer._check_missing_values(dataset)
+
+        # post condition
+        self.assertTrue(result)
+
+    def test__check_missing_values__nan_and_na_value(self):
+        # setup
+        dataset = {
+            'number': DEXENTRY_DATA['number'],
+            'name': 'na',
+            'form': POKEMON_DATA['form'],
+            'sprite': POKEMON_DATA['sprite'],
+            'generation': 'nan',
             'lgplge': POKEMON_DATA['lgplge'],
             'swsh': POKEMON_DATA['swsh'],
             'arceus': POKEMON_DATA['arceus'],
@@ -721,11 +770,12 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertEqual(len(pokemons), 0)
 
         # do it
-        self.importer.run_import(pokedex_id=self.pokedex.id)
+        result = self.importer.run_import(pokedex_id=self.pokedex.id)
 
         # post condition
-        self.assertEqual(self.importer.imported, 39)
-        self.assertEqual(self.importer.updated, 0)
+        self.assertEqual(result[0], 0)  # skipped
+        self.assertEqual(result[1], 0)  # updated
+        self.assertEqual(result[2], 39)  # imported
 
         generations = self.db.session.query(Generation).all()
         self.assertEqual(len(generations), 2)
@@ -765,5 +815,53 @@ class TestDatabaseManager(DatabaseTestCase):
         self.assertFalse(pokemon.caught)
         self.assertFalse(pokemon.shiny_caught)
 
+    def test_run_import___no_data(self):
+        # setup
+        file_name = 'test-dex-data_wrong_data_type.csv'
+        self.importer.__init__(
+            file_path=self.file_path,
+            file_name=file_name,
+            env='testing'
+        )
+
+        # pre condition
+        self.assertTrue(path.isfile(self.importer.file))
+
+        # do it
+        result = self.importer.run_import(pokedex_id=self.pokedex.id)
+
+        # post condition
+        self.assertIsNone(result)
+
+    def test_run_import___no_pokedex(self):
+        # setup
+        invalid_pokedex_id = 0000
+
+        # pre condition
+        self.assertIsNone(self.db.get_pokdex(_id=invalid_pokedex_id))
+
+        # do it
+        result = self.importer.run_import(pokedex_id=invalid_pokedex_id)
+
+        # post condition
+        self.assertIsNone(result)
+
     def test_run_import___missing_values(self):
-        self.skipTest('TODO')
+        # setup
+        file_name = 'test-dex-data_na_values.csv'
+        self.importer.__init__(
+            file_path=self.file_path,
+            file_name=file_name,
+            env='testing'
+        )
+
+        # pre condition
+        self.assertTrue(path.isfile(self.importer.file))
+
+        # do it
+        result = self.importer.run_import(pokedex_id=self.pokedex.id)
+
+        # post condition
+        self.assertEqual(result[0], 1)  # skipped
+        self.assertEqual(result[1], 0)  # updated
+        self.assertEqual(result[2], 0)  # imported
