@@ -32,9 +32,21 @@ cd backend
 
 TODO
 
-### Start services
+### Run services
 
-TODO
+#### Backend:
+
+```shell
+cd backend
+python run.py
+```
+
+#### Frontend:
+
+```shell
+cd frontend
+
+```
 
 ## Importer
 
