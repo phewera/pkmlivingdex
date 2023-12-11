@@ -1,4 +1,4 @@
-from typing import Dict, Union, TypedDict, Any, List, NotRequired
+from typing import Dict, Union, TypedDict, Any, List, NotRequired, Tuple
 
 from sqlalchemy import Integer, String, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
@@ -102,6 +102,21 @@ class Generation(Base):
     pokedex = relationship("Pokedex", back_populates="generations")
     # children
     dexentries = relationship("DexEntry", back_populates="generation")
+
+    def get_pokemon_count(self) -> Tuple[int, int]:
+        count = 0
+        caught = 0
+
+        dexentry: DexEntry
+        for dexentry in self.dexentries:
+            count += len(dexentry.pokemons)
+
+            pokemon: Pokemon
+            for pokemon in dexentry.pokemons:
+                if pokemon.caught or pokemon.shiny_caught:
+                    caught += 1
+
+        return count, caught
 
 
 class DexEntry(Base):
