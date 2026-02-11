@@ -98,19 +98,6 @@ To deploy the frontend to a static host (e.g., Vercel, Netlify, GitHub Pages, or
 
 *Note: Ensure your frontend is configured to communicate with the production URL of your backend API.*
 
-## Running Tests
-
-Unit tests are provided for the backend logic.
-
-```bash
-# Ensure you are in the backend directory and your venv is activated
-cd backend
-venv\Scripts\activate
-
-# Run tests using pytest
-python -m pytest
-```
-
 ### 4. Docker Setup (Production)
 You can run the entire application (frontend + backend) using Docker. This is recommended for production use.
 
@@ -131,6 +118,35 @@ You can run the entire application (frontend + backend) using Docker. This is re
     ```bash
     docker compose down
     ```
+
+## Custom Domain Setup
+
+To access the app via a custom domain like `http://pokemon.local`:
+
+1.  **Edit Hosts File:**
+    - Open Notepad as Administrator.
+    - Open `C:\Windows\System32\drivers\etc\hosts`.
+    - Add the following line at the end:
+        ```
+        127.0.0.1 pokemon.local
+        ```
+    - Save the file.
+
+2.  **Access:**
+    - You can now access the app at [http://pokemon.local](http://pokemon.local).
+
+## Running Tests
+
+Unit tests are provided for the backend logic.
+
+```bash
+# Ensure you are in the backend directory and your venv is activated
+cd backend
+venv\Scripts\activate
+
+# Run tests using pytest
+python -m pytest
+```
 
 ## Troubleshooting
 ### Windows: Script Execution Disabled
@@ -155,23 +171,6 @@ venv\Scripts\python -m uvicorn main:app --reload
 venv\Scripts\python -m pytest
 ```
 
-## Acknowledgements
+## Credits
 
 - **[PokeAPI](https://pokeapi.co/)**: Huge thanks to PokeAPI for providing the extensive Pokémon data, sprites, and information used in this project.
-
-## Custom Domain Setup
-
-To access the app via a custom domain like `http://pokemon.local`:
-
-1.  **Edit Hosts File:**
-    - Open Notepad as Administrator.
-    - Open `C:\Windows\System32\drivers\etc\hosts`.
-    - Add the following line at the end:
-        ```
-        127.0.0.1 pokemon.local
-        ```
-    - Save the file.
-
-2.  **Access:**
-    - You can now access the app at [http://pokemon.local](http://pokemon.local).
-
