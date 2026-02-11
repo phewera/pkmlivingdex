@@ -9,13 +9,19 @@ function SettingsModal({ isOpen, onClose, language, setLanguage, onImportSuccess
     const [tempLanguage, setTempLanguage] = useState(language);
     const [isImporting, setIsImporting] = useState(false);
     const [importProgress, setImportProgress] = useState(0);
-    const t = translations[tempLanguage];
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateStatus, setUpdateStatus] = useState({ progress: 0, message: "" });
+    const updateIntervalRef = useRef(null);
+    const t = translations[tempLanguage] || translations['de'];
 
     // Sync tempLanguage when modal opens
     useEffect(() => {
         if (isOpen) {
             setTempLanguage(language);
         }
+        return () => {
+            if (updateIntervalRef.current) clearInterval(updateIntervalRef.current);
+        };
     }, [isOpen, language]);
 
     if (!isOpen) return null;
@@ -122,6 +128,42 @@ function SettingsModal({ isOpen, onClose, language, setLanguage, onImportSuccess
         onClose();
     };
 
+    const handleUpdateDatabase = async () => {
+        try {
+            const startResponse = await fetch(`${API_URL}/system/update-database`, { method: 'POST' });
+            if (!startResponse.ok) throw new Error("Failed to start update");
+
+            setIsUpdating(true);
+            setUpdateStatus({ progress: 0, message: "Starting..." });
+
+            updateIntervalRef.current = setInterval(async () => {
+                try {
+                    const statusRes = await fetch(`${API_URL}/system/update-status`);
+                    const status = await statusRes.json();
+
+                    setUpdateStatus(status);
+
+                    if (status.state === 'complete') {
+                        clearInterval(updateIntervalRef.current);
+                        setIsUpdating(false);
+                        showToast(t.updateCompleted || "Update complete!");
+                        if (onImportSuccess) onImportSuccess();
+                    } else if (status.state === 'error') {
+                        clearInterval(updateIntervalRef.current);
+                        setIsUpdating(false);
+                        showToast(t.updateError || status.message || "Update failed");
+                    }
+                } catch (e) {
+                    console.error("Poll error", e);
+                }
+            }, 1000);
+
+        } catch (error) {
+            console.error("Update start failed", error);
+            showToast(t.updateError || "Failed to start update");
+        }
+    };
+
     return (
         <>
             <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -205,7 +247,46 @@ function SettingsModal({ isOpen, onClose, language, setLanguage, onImportSuccess
                                         accept=".csv"
                                         className="hidden"
                                     />
+
+                                    <button
+                                        onClick={handleUpdateDatabase}
+                                        disabled={isUpdating}
+                                        className={`col-span-2 flex flex-col items-center justify-center p-4 rounded-xl transition-colors border border-transparent ${isUpdating ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-200'}`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        <span className="text-sm font-bold">{isUpdating ? (t.updating || "Updating...") : (t.updateDatabase || "Update Database")}</span>
+                                    </button>
                                 </div>
+
+                                {isUpdating && (
+                                    <div className="mt-4">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
+                                                {(() => {
+                                                    if (!updateStatus.message) return "Working...";
+                                                    const parts = updateStatus.message.split('|');
+                                                    const key = parts[0];
+                                                    const param = parts[1];
+
+                                                    let msg = t[key] || updateStatus.message;
+                                                    if (param && msg.includes(":")) {
+                                                        return msg + param;
+                                                    }
+                                                    return msg;
+                                                })()}
+                                            </span>
+                                            <span className="text-xs font-bold text-purple-600">{updateStatus.progress}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
+                                            <div
+                                                className="bg-purple-600 h-full transition-all duration-300 ease-out"
+                                                style={{ width: `${updateStatus.progress}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {isImporting && (
                                     <div className="mt-4">

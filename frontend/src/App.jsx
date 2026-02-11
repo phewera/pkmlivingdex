@@ -40,7 +40,10 @@ function App() {
   const [stats, setStats] = useState([]);
   const [selectedGeneration, setSelectedGeneration] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState(localStorage.getItem('language') || 'de');
+  const [language, setLanguage] = useState(() => {
+    const saved = localStorage.getItem('language');
+    return (saved === 'en' || saved === 'de') ? saved : 'de';
+  });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,7 +58,8 @@ function App() {
 
   const filteredPokemon = React.useMemo(() => {
     return pokemonList.filter(p => {
-      const name = (language === 'en' ? p.name_en : p.name).toLowerCase();
+      const pName = language === 'en' ? (p.name_en || p.name) : p.name;
+      const name = (pName || '').toLowerCase();
       const matchesSearch = name.includes(searchQuery.toLowerCase()) || p.id.toString().includes(searchQuery);
 
       if (!matchesSearch) return false;

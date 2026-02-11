@@ -2,7 +2,9 @@ import React from 'react';
 import { translations } from '../translations';
 
 function ConfirmationModal({ isOpen, onClose, onConfirm, message, language }) {
-    const t = translations[language];
+    const t = translations[language] || translations['de'];
+
+    if (!isOpen || !t) return null;
 
     if (!isOpen) return null;
 

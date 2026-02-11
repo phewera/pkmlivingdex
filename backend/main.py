@@ -201,7 +201,57 @@ async def import_progress(file: UploadFile = File(...), session: Session = Depen
             count += 1
             
     session.commit()
+    session.commit()
     return {"status": "success", "count": count}
+
+
+# --- System Update Endpoints ---
+
+from fastapi import BackgroundTasks
+from seed import seed_pokemon_async
+
+# Global status object (simple in-memory state)
+UPDATE_STATUS = {
+    "state": "idle", # idle, running, complete, error
+    "progress": 0,
+    "current": 0,
+    "total": 100,
+    "message": ""
+}
+
+async def run_update_task():
+    global UPDATE_STATUS
+    UPDATE_STATUS["state"] = "running"
+    UPDATE_STATUS["progress"] = 0
+    UPDATE_STATUS["message"] = "Starting update..."
+    
+    async def progress_callback(current, total, message):
+        UPDATE_STATUS["current"] = current
+        UPDATE_STATUS["total"] = total
+        UPDATE_STATUS["progress"] = int((current / total) * 100) if total > 0 else 0
+        UPDATE_STATUS["message"] = message
+        
+    try:
+        await seed_pokemon_async(progress_callback)
+        UPDATE_STATUS["state"] = "complete"
+        UPDATE_STATUS["progress"] = 100
+        UPDATE_STATUS["message"] = "Update complete!"
+    except Exception as e:
+        UPDATE_STATUS["state"] = "error"
+        UPDATE_STATUS["message"] = str(e)
+        logging.error(f"Update failed: {e}")
+
+@app.post("/system/update-database")
+async def start_database_update(background_tasks: BackgroundTasks):
+    if UPDATE_STATUS["state"] == "running":
+        return {"status": "already_running", "message": "Update is already in progress"}
+    
+    background_tasks.add_task(run_update_task)
+    return {"status": "started", "message": "Database update started in background"}
+
+@app.get("/system/update-status")
+def get_update_status():
+    return UPDATE_STATUS
 
 
 if __name__ == "__main__":

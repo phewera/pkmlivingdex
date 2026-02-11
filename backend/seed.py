@@ -136,23 +136,30 @@ async def fetch_species_data(client, species_url):
         return []
 
 
-async def seed_pokemon_async():
+async def seed_pokemon_async(progress_callback=None):
     # Create tables if they don't exist (idempotent)
     create_db_and_tables()
 
+    if progress_callback:
+        await progress_callback(0, 100, "status_init")
+
     async with httpx.AsyncClient(timeout=30.0) as client:
         print("Fetching Pokemon species list...")
+        if progress_callback:
+            await progress_callback(5, 100, "status_fetching_species")
+            
         url = "https://pokeapi.co/api/v2/pokemon-species?limit=1025"
         response = await client.get(url)
         base_data = response.json()
         results = base_data.get("results", [])
 
-        print(f"Found {len(results)} species. Starting parallel fetch...")
+        total_species = len(results)
+        print(f"Found {total_species} species. Starting parallel fetch...")
 
         batch_size = 50
         all_pokemon = []
 
-        for i in range(0, len(results), batch_size):
+        for i in range(0, total_species, batch_size):
             batch = results[i:i + batch_size]
             tasks = [fetch_species_data(client, item["url"]) for item in batch]
 
@@ -161,8 +168,17 @@ async def seed_pokemon_async():
                 for p in species_varieties:
                     if p:
                         all_pokemon.append(p)
+            
+            # Calculate progress (10% to 90% reserved for fetching)
+            current_progress = 10 + int((min(i + batch_size, total_species) / total_species) * 80)
+            if progress_callback:
+                # Send key with dynamic data separated by |
+                await progress_callback(current_progress, 100, f"status_fetched_varieties|{len(all_pokemon)}")
 
-            print(f"Processed {min(i + batch_size, len(results))}/1025 species...")
+            print(f"Processed {min(i + batch_size, total_species)}/1025 species...")
+
+        if progress_callback:
+            await progress_callback(90, 100, "status_updating_db")
 
         with Session(engine) as session:
             print(f"Upserting {len(all_pokemon)} Pokemon entries to database...")
@@ -186,6 +202,9 @@ async def seed_pokemon_async():
                     session.add(p)
             
             session.commit()
+            
+    if progress_callback:
+        await progress_callback(100, 100, "status_complete")
 
     print("Seeding complete! User progress preserved.")
 
