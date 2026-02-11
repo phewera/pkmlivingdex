@@ -183,6 +183,7 @@ function App() {
                   selectedGeneration={selectedGeneration}
                   onSelect={setSelectedGeneration}
                   translations={t}
+                  availableGenerations={stats.map(s => s.generation).sort((a, b) => a - b)}
                 />
               </div>
 
@@ -246,6 +247,7 @@ function App() {
                   selectedGeneration={selectedGeneration}
                   onSelect={setSelectedGeneration}
                   translations={t}
+                  availableGenerations={stats.map(s => s.generation).sort((a, b) => a - b)}
                 />
               </div>
 

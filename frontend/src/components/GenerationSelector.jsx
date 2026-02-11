@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const GenerationSelector = ({ selectedGeneration, onSelect, translations }) => {
+const GenerationSelector = ({ selectedGeneration, onSelect, translations, availableGenerations = [] }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -23,7 +23,9 @@ const GenerationSelector = ({ selectedGeneration, onSelect, translations }) => {
         setIsOpen(false);
     };
 
-    const generations = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const generations = [0, ...(availableGenerations && availableGenerations.length > 0 ? availableGenerations : [1, 2, 3, 4, 5, 6, 7, 8, 9])];
+    // Remove duplicates just in case
+    const uniqueGenerations = [...new Set(generations)];
 
     return (
         <div className="relative" ref={dropdownRef}>
@@ -50,7 +52,7 @@ const GenerationSelector = ({ selectedGeneration, onSelect, translations }) => {
             {isOpen && (
                 <div className="absolute top-full left-0 mt-2 w-full min-w-[160px] bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top overflow-hidden">
                     <div className="py-1">
-                        {generations.map((gen) => (
+                        {uniqueGenerations.map((gen) => (
                             <button
                                 key={gen}
                                 onClick={() => handleSelect(gen)}

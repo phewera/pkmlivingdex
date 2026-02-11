@@ -8,6 +8,7 @@ A modern web application to track your progress in building a "Living Dex" (coll
 - **Generation Filtering**: View progress for specific generations or all at once.
 - **Statistics**: Detailed statistics on capture progress, including shiny collection rates.
 - **Manual Database Update:** Trigger a refresh of Pokemon data from PokeAPI directly via the Settings menu.
+- **Future-Proof Generations:** Automatically detects and displays new Pokemon generations from the database/PokeAPI without requiring application updates. Simply run the "Database Update" to fetch them.
 - **Import/Export**: Backup and restore your collection data easily via CSV files.
 - **Progress Reset**: Reset your entire progress if you want to start fresh.
 - **Offline Support**: Caches Pokémon sprites for offline viewing after initial load.
