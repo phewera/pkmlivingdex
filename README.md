@@ -108,7 +108,7 @@ cd backend
 venv\Scripts\activate
 
 # Run tests using pytest
-pytest
+python -m pytest
 ```
 
 ## Acknowledgements
