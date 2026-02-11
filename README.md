@@ -116,20 +116,20 @@ Use this for the final "product" installation. It pulls the latest code directly
 1.  **Build the Image**:
     ```bash
     # Build a specific version (e.g., v1.0.0) or branch (main)
-    docker build -f Dockerfile.prod -t pokemon-prod --build-arg APP_VERSION=v1.0.0 .
+    docker build -f Dockerfile.prod -t pkmlivingdex --build-arg APP_VERSION=v1.0.0 .
     ```
     *If no version is specified, it defaults to `main`.*
 
 2.  **Run the Container**:
     ```bash
-    docker run -d -p 80:80 --name pokemon-app pokemon-prod
+    docker run -d -p 80:80 --name pkmlivingdex pkmlivingdex
     ```
 
 3.  **Access**: [http://localhost](http://localhost) (or [http://pokemon.local](http://pokemon.local))
 
 #### Stopping
 - For Option A: `docker compose down`
-- For Option B: `docker rm -f pokemon-app`
+- For Option B: `docker rm -f pkmlivingdex`
 
 ## Custom Domain Setup
 
