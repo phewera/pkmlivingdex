@@ -111,6 +111,29 @@ venv\Scripts\activate
 python -m pytest
 ```
 
+## Troubleshooting
+### Windows: Script Execution Disabled
+If you see an error like `cannot be loaded because running scripts is disabled on this system`, you need to update your PowerShell execution policy. Run this command in PowerShell:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+```
+
+Then try activating the virtual environment again:
+```bash
+venv\Scripts\activate
+```
+
+Alternatively, you can run the commands directly using the virtual environment's Python executable without activating it first:
+
+```bash
+# Run server
+venv\Scripts\python -m uvicorn main:app --reload
+
+# Run tests
+venv\Scripts\python -m pytest
+```
+
 ## Acknowledgements
 
 - **[PokeAPI](https://pokeapi.co/)**: Huge thanks to PokeAPI for providing the extensive Pokémon data, sprites, and information used in this project.
