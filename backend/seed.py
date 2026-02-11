@@ -137,8 +137,7 @@ async def fetch_species_data(client, species_url):
 
 
 async def seed_pokemon_async():
-    # Use metadata to drop and recreate for a truly clean slate
-    SQLModel.metadata.drop_all(engine)
+    # Create tables if they don't exist (idempotent)
     create_db_and_tables()
 
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -166,12 +165,29 @@ async def seed_pokemon_async():
             print(f"Processed {min(i + batch_size, len(results))}/1025 species...")
 
         with Session(engine) as session:
-            print(f"Adding {len(all_pokemon)} Pokemon entries to database...")
+            print(f"Upserting {len(all_pokemon)} Pokemon entries to database...")
+            
+            # Fetch existing IDs to decide between insert and update
+            # Note: For strict correctness/speed in huge datasets, we'd use bulk operations or ON CONFLICT.
+            # But here we iterate to keep it simple with SQLModel.
+            
             for p in all_pokemon:
-                session.add(p)
+                existing_pokemon = session.get(Pokemon, p.id)
+                if existing_pokemon:
+                    # Update fields
+                    existing_pokemon.name = p.name
+                    existing_pokemon.name_en = p.name_en
+                    existing_pokemon.generation = p.generation
+                    existing_pokemon.image_url = p.image_url
+                    existing_pokemon.shiny_image_url = p.shiny_image_url
+                    session.add(existing_pokemon)
+                else:
+                    # Insert new
+                    session.add(p)
+            
             session.commit()
 
-    print("Seeding complete!")
+    print("Seeding complete! User progress preserved.")
 
 
 if __name__ == "__main__":
