@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    container_name: pokemon_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/database.db:/app/database.db
+      - ./backend/static/sprites:/app/static/sprites
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: pokemon_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

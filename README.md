@@ -111,6 +111,27 @@ venv\Scripts\activate
 python -m pytest
 ```
 
+### 4. Docker Setup (Production)
+You can run the entire application (frontend + backend) using Docker. This is recommended for production use.
+
+1.  **Build and Start**:
+    ```bash
+    docker compose up --build -d
+    ```
+    This will start the following containers:
+    -   `pokemon_backend`: API running on internal port 8000.
+    -   `pokemon_frontend`: Nginx server serving the React app on port 80.
+
+2.  **Access the App**:
+    Open [http://localhost](http://localhost) in your browser.
+
+    *Note: The database and downloaded sprites are persisted in the `backend/database.db` file and `backend/static/sprites` directory on your host machine.*
+
+3.  **Stop**:
+    ```bash
+    docker compose down
+    ```
+
 ## Troubleshooting
 ### Windows: Script Execution Disabled
 If you see an error like `cannot be loaded because running scripts is disabled on this system`, you need to update your PowerShell execution policy. Run this command in PowerShell:
@@ -137,4 +158,20 @@ venv\Scripts\python -m pytest
 ## Acknowledgements
 
 - **[PokeAPI](https://pokeapi.co/)**: Huge thanks to PokeAPI for providing the extensive Pokémon data, sprites, and information used in this project.
+
+## Custom Domain Setup
+
+To access the app via a custom domain like `http://pokemon.local`:
+
+1.  **Edit Hosts File:**
+    - Open Notepad as Administrator.
+    - Open `C:\Windows\System32\drivers\etc\hosts`.
+    - Add the following line at the end:
+        ```
+        127.0.0.1 pokemon.local
+        ```
+    - Save the file.
+
+2.  **Access:**
+    - You can now access the app at [http://pokemon.local](http://pokemon.local).
 
