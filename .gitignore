@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *.class
 *.so
@@ -52,3 +53,5 @@ Desktop.ini
 # Backend Static Files (Downloaded by seed.py or generated)
 backend/static/sprites/
 backend/database.db
+
+# Force git update
