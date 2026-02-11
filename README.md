@@ -98,26 +98,38 @@ To deploy the frontend to a static host (e.g., Vercel, Netlify, GitHub Pages, or
 
 *Note: Ensure your frontend is configured to communicate with the production URL of your backend API.*
 
-### 4. Docker Setup (Production)
-You can run the entire application (frontend + backend) using Docker. This is recommended for production use.
+### 4. Docker Setup
 
+You have two options for running with Docker:
+
+#### Option A: Local Development (Build from Disk)
+Use this if you want to test changes locally before pushing to GitHub.
 1.  **Build and Start**:
     ```bash
     docker compose up --build -d
     ```
-    This will start the following containers:
-    -   `pokemon_backend`: API running on internal port 8000.
-    -   `pokemon_frontend`: Nginx server serving the React app on port 80.
+2.  **Access**: [http://localhost](http://localhost) (or [http://pokemon.local](http://pokemon.local))
 
-2.  **Access the App**:
-    Open [http://localhost](http://localhost) in your browser.
+#### Option B: Production (Pull from GitHub)
+Use this for the final "product" installation. It pulls the latest code directly from the GitHub repository.
 
-    *Note: The database and downloaded sprites are persisted in the `backend/database.db` file and `backend/static/sprites` directory on your host machine.*
-
-3.  **Stop**:
+1.  **Build the Image**:
     ```bash
-    docker compose down
+    # Build a specific version (e.g., v1.0.0) or branch (main)
+    docker build -f Dockerfile.prod -t pokemon-prod --build-arg APP_VERSION=v1.0.0 .
     ```
+    *If no version is specified, it defaults to `main`.*
+
+2.  **Run the Container**:
+    ```bash
+    docker run -d -p 80:80 --name pokemon-app pokemon-prod
+    ```
+
+3.  **Access**: [http://localhost](http://localhost) (or [http://pokemon.local](http://pokemon.local))
+
+#### Stopping
+- For Option A: `docker compose down`
+- For Option B: `docker rm -f pokemon-app`
 
 ## Custom Domain Setup
 
