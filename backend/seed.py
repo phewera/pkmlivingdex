@@ -53,6 +53,9 @@ async def download_image(client, url, path):
     if os.path.exists(path):
         return
     try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
         response = await client.get(url)
         if response.status_code == 200:
             async with await anyio.open_file(path, "wb") as f:

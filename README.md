@@ -58,9 +58,6 @@ venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Initialize the database and seed data
-python seed.py
-
 # Start the server
 python -m uvicorn main:app --reload
 ```

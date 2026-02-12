@@ -12,12 +12,25 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
-from database import create_db_and_tables, get_session
+from database import create_db_and_tables, get_session, engine
 from models import Pokemon, UserProgress, PokemonResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    
+    # Check if database is empty and seed if necessary
+    with Session(engine) as session:
+        statement = select(Pokemon)
+        result = session.exec(statement).first()
+        if not result:
+            logging.info("Database empty. Starting automatic seeding...")
+            # Run seeding in background to not block startup entirely, 
+            # but ideally we want it before serving. 
+            # Since it is async, we can await it here to ensure data is ready.
+            await seed_pokemon_async()
+            logging.info("Automatic seeding complete.")
+            
     yield
 
 app = FastAPI(lifespan=lifespan)

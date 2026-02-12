@@ -1,11 +1,11 @@
 # Stage 1: Fetch source code from GitHub
-FROM alpine/git as fetcher
+FROM alpine/git AS fetcher
 ARG APP_VERSION=main
 WORKDIR /app
 RUN git clone --branch ${APP_VERSION} --depth 1 https://github.com/phewera/pkmlivingdex.git .
 
 # Stage 2: Build Frontend
-FROM node:18-alpine as frontend-builder
+FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
 # Copy frontend source from fetcher
 COPY --from=fetcher /app/frontend ./
@@ -32,6 +32,9 @@ COPY --from=fetcher /app/backend/requirements.txt /app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Seed the database during build
+RUN python backend/seed.py
 
 # Copy Built Frontend Assets
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
