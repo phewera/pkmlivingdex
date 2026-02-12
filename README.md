@@ -107,7 +107,7 @@ Use this if you want to test changes locally before pushing to GitHub.
     ```bash
     docker compose up --build -d
     ```
-2.  **Access**: [http://localhost](http://localhost) (or [http://pokemon.local](http://pokemon.local))
+2.  **Access**: [http://localhost:4455](http://localhost:4455)
 
 #### Option B: Production (Pull from GitHub)
 Use this for the final "product" installation. It pulls the latest code directly from the GitHub repository.
@@ -121,30 +121,17 @@ Use this for the final "product" installation. It pulls the latest code directly
 
 2.  **Run the Container**:
     ```bash
-    docker run -d -p 80:80 --name pkmlivingdex pkmlivingdex
+    # Map host port 4455 to container port 80
+    docker run -d -p 4455:80 --name pkmlivingdex pkmlivingdex
     ```
+    *Note: You can change `4455` to any available port (e.g., `-p 80:80` for default HTTP).*
 
-3.  **Access**: [http://localhost](http://localhost) (or [http://pokemon.local](http://pokemon.local))
+3.  **Access**:
+    -   If using port 4455: [http://localhost:4455](http://localhost:4455)
 
 #### Stopping
 - For Option A: `docker compose down`
 - For Option B: `docker rm -f pkmlivingdex`
-
-## Custom Domain Setup
-
-To access the app via a custom domain like `http://pokemon.local`:
-
-1.  **Edit Hosts File:**
-    - Open Notepad as Administrator.
-    - Open `C:\Windows\System32\drivers\etc\hosts`.
-    - Add the following line at the end:
-        ```
-        127.0.0.1 pokemon.local
-        ```
-    - Save the file.
-
-2.  **Access:**
-    - You can now access the app at [http://pokemon.local](http://pokemon.local).
 
 ## Running Tests
 
