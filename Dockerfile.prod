@@ -41,7 +41,8 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 
 # Copy Nginx Configuration from repo and adjust for local backend
 COPY --from=fetcher /app/frontend/nginx.conf /etc/nginx/conf.d/default.conf
-RUN sed -i 's/backend:8000/127.0.0.1:8000/g' /etc/nginx/conf.d/default.conf
+RUN sed -i 's/backend:8000/127.0.0.1:8000/g' /etc/nginx/conf.d/default.conf && \
+    rm -f /etc/nginx/sites-enabled/default
 
 # Copy Supervisor Configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
